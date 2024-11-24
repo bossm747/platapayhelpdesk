@@ -28,6 +28,7 @@ import Settings from "./pages/settings/Index";
 import Team from "./pages/settings/team";
 import Automation from "./pages/settings/automation";
 import Integration from "./pages/settings/integration";
+import Profile from "./pages/settings/profile";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient({
@@ -69,6 +70,7 @@ const App = () => {
             <Route path="/settings/team" element={<Team />} />
             <Route path="/settings/automation" element={<Automation />} />
             <Route path="/settings/integration" element={<Integration />} />
+            <Route path="/settings/profile" element={<Profile />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
