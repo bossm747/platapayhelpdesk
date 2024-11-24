@@ -7,21 +7,30 @@ import { Search } from "lucide-react";
 const mockChats = [
   {
     id: "chat-1",
-    customer: "John Doe",
+    customer: {
+      name: "John Doe",
+      email: "john@example.com"
+    },
     lastMessage: "Thank you for your help!",
     timestamp: "2 mins ago",
     status: "active" as const,
   },
   {
     id: "chat-2",
-    customer: "Jane Smith",
+    customer: {
+      name: "Jane Smith",
+      email: "jane@example.com"
+    },
     lastMessage: "I'm having issues with my payment",
     timestamp: "15 mins ago",
     status: "waiting" as const,
   },
   {
     id: "chat-3",
-    customer: "Mike Johnson",
+    customer: {
+      name: "Mike Johnson",
+      email: "mike@example.com"
+    },
     lastMessage: "Issue resolved, thanks!",
     timestamp: "1 hour ago",
     status: "closed" as const,
