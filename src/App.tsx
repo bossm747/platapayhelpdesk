@@ -4,10 +4,30 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
+
+// Dashboard & Analytics
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
-import Team from "./pages/Team";
-import Settings from "./pages/Settings";
+
+// Ticket Management
+import Tickets from "./pages/tickets/Index";
+import TicketDetails from "./pages/tickets/[id]";
+import NewTicket from "./pages/tickets/new";
+
+// Knowledge Base
+import KnowledgeBase from "./pages/knowledge-base/Index";
+import Article from "./pages/knowledge-base/[id]";
+import NewArticle from "./pages/knowledge-base/new";
+
+// Customer Support
+import Chat from "./pages/chat/Index";
+import ChatRoom from "./pages/chat/[id]";
+
+// Settings & Administration
+import Settings from "./pages/settings/Index";
+import Team from "./pages/settings/team";
+import Automation from "./pages/settings/automation";
+import Integration from "./pages/settings/integration";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient({
@@ -26,10 +46,29 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Dashboard & Analytics */}
             <Route path="/" element={<Index />} />
             <Route path="/analytics" element={<Analytics />} />
-            <Route path="/team" element={<Team />} />
+            
+            {/* Ticket Management */}
+            <Route path="/tickets" element={<Tickets />} />
+            <Route path="/tickets/new" element={<NewTicket />} />
+            <Route path="/tickets/:id" element={<TicketDetails />} />
+            
+            {/* Knowledge Base */}
+            <Route path="/knowledge-base" element={<KnowledgeBase />} />
+            <Route path="/knowledge-base/new" element={<NewArticle />} />
+            <Route path="/knowledge-base/:id" element={<Article />} />
+            
+            {/* Customer Support */}
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:id" element={<ChatRoom />} />
+            
+            {/* Settings & Administration */}
             <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/team" element={<Team />} />
+            <Route path="/settings/automation" element={<Automation />} />
+            <Route path="/settings/integration" element={<Integration />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
