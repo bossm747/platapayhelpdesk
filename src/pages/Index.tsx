@@ -1,6 +1,5 @@
 import Layout from "@/components/layout/Layout";
 import StatCard from "@/components/dashboard/StatCard";
-import RevenueChart from "@/components/dashboard/RevenueChart";
 import { Ticket, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 const Index = () => {
@@ -33,7 +32,6 @@ const Index = () => {
             icon={AlertCircle}
           />
         </div>
-        <RevenueChart />
       </div>
     </Layout>
   );
