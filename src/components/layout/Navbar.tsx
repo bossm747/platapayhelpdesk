@@ -1,4 +1,4 @@
-import { Bell, User } from "lucide-react";
+import { Bell, Menu, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,22 +7,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
-const Navbar = () => {
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+
+const Navbar = ({ onMenuClick }: NavbarProps) => {
   return (
-    <div className="h-16 border-b border-zinc-800 fixed top-0 right-0 left-64 bg-background/50 backdrop-blur-sm">
-      <div className="flex items-center justify-between h-full px-6">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-lg hover:bg-zinc-800 transition-colors">
+    <div className="h-16 border-b border-zinc-800 fixed top-0 right-0 left-0 md:left-64 bg-background/50 backdrop-blur-sm z-50">
+      <div className="flex items-center justify-between h-full px-4 md:px-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+        </div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button variant="ghost" size="icon">
             <Bell className="w-5 h-5" />
-          </button>
+          </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-800 transition-colors">
-              <User className="w-5 h-5" />
-              <span>John Doe</span>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                <span className="hidden md:inline">John Doe</span>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
