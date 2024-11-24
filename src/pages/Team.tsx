@@ -1,58 +1,42 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const teamMembers = [
-  {
-    name: "John Doe",
-    role: "CEO",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-    email: "john@startup.com"
-  },
-  {
-    name: "Jane Smith",
-    role: "CTO",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
-    email: "jane@startup.com"
-  },
-  {
-    name: "Mike Johnson",
-    role: "Product Manager",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-    email: "mike@startup.com"
-  }
-];
-
-const Team = () => {
+const SupportChat = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Team Members</h1>
+        <h1 className="text-2xl font-bold">Support Chat</h1>
         
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {teamMembers.map((member) => (
-            <Card key={member.email} className="bg-zinc-900 border-zinc-800">
-              <CardHeader>
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{member.name}</CardTitle>
-                    <p className="text-sm text-zinc-400">{member.role}</p>
-                  </div>
+        <Card className="bg-zinc-900 border-zinc-800 h-[calc(100vh-12rem)]">
+          <div className="flex flex-col h-full">
+            <ScrollArea className="flex-1 p-4">
+              {/* Chat messages would go here */}
+              <div className="space-y-4">
+                <div className="bg-zinc-800 rounded-lg p-3 max-w-[80%]">
+                  <p className="text-sm text-zinc-400">Customer</p>
+                  <p>Hi, I'm having issues with my payment transaction.</p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-zinc-400">{member.email}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <div className="bg-violet-900/50 rounded-lg p-3 max-w-[80%] ml-auto">
+                  <p className="text-sm text-zinc-400">Support Agent</p>
+                  <p>Hello! I'd be happy to help. Could you please provide your transaction ID?</p>
+                </div>
+              </div>
+            </ScrollArea>
+            
+            <CardContent className="border-t border-zinc-800 p-4">
+              <div className="flex gap-2">
+                <Input placeholder="Type your message..." className="flex-1" />
+                <Button>Send</Button>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
       </div>
     </Layout>
   );
 };
 
-export default Team;
+export default SupportChat;

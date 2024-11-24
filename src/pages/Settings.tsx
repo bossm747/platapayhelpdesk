@@ -5,50 +5,65 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const Settings = () => {
+const KnowledgeBase = () => {
   const handleSave = () => {
-    toast.success("Settings saved successfully");
+    toast.success("Article saved successfully");
   };
 
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <h1 className="text-2xl font-bold">Knowledge Base</h1>
         
         <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle>Notifications</CardTitle>
+            <CardTitle>Common Issues</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-zinc-400">Receive email updates about your account</p>
+            <div className="space-y-4">
+              <div className="p-4 border border-zinc-800 rounded-lg">
+                <h3 className="font-semibold mb-2">Payment Processing Issues</h3>
+                <p className="text-sm text-zinc-400">
+                  Common solutions for payment processing problems and troubleshooting steps.
+                </p>
               </div>
-              <Switch />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Push Notifications</Label>
-                <p className="text-sm text-zinc-400">Receive push notifications about your account</p>
+              
+              <div className="p-4 border border-zinc-800 rounded-lg">
+                <h3 className="font-semibold mb-2">Refund Requests</h3>
+                <p className="text-sm text-zinc-400">
+                  Guidelines and procedures for handling customer refund requests.
+                </p>
               </div>
-              <Switch />
+              
+              <div className="p-4 border border-zinc-800 rounded-lg">
+                <h3 className="font-semibold mb-2">Account Verification</h3>
+                <p className="text-sm text-zinc-400">
+                  Steps to verify customer accounts and resolve verification issues.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle>Account Preferences</CardTitle>
+            <CardTitle>Article Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Dark Mode</Label>
-                <p className="text-sm text-zinc-400">Toggle dark mode theme</p>
+                <Label>Public Access</Label>
+                <p className="text-sm text-zinc-400">Make articles publicly accessible</p>
               </div>
-              <Switch defaultChecked />
+              <Switch />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto-Translation</Label>
+                <p className="text-sm text-zinc-400">Automatically translate articles</p>
+              </div>
+              <Switch />
             </div>
             
             <div className="flex justify-end">
@@ -61,4 +76,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default KnowledgeBase;

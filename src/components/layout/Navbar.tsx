@@ -26,7 +26,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <h1 className="text-lg font-semibold">Helpdesk Dashboard</h1>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
           <Button variant="ghost" size="icon">
@@ -36,14 +36,14 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                <span className="hidden md:inline">John Doe</span>
+                <span className="hidden md:inline">Support Agent</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Agent Dashboard</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>View Profile</DropdownMenuItem>
+              <DropdownMenuItem>Agent Settings</DropdownMenuItem>
               <DropdownMenuItem>Sign out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

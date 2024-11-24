@@ -1,46 +1,69 @@
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-const data = [
-  { category: "Product A", sales: 400 },
-  { category: "Product B", sales: 300 },
-  { category: "Product C", sales: 500 },
-  { category: "Product D", sales: 280 },
-  { category: "Product E", sales: 590 },
+const tickets = [
+  {
+    id: "TKT-001",
+    customer: "Juan Dela Cruz",
+    issue: "Payment Failed",
+    status: "Open",
+    priority: "High",
+    created: "2h ago",
+  },
+  {
+    id: "TKT-002",
+    customer: "Maria Santos",
+    issue: "Refund Request",
+    status: "In Progress",
+    priority: "Medium",
+    created: "4h ago",
+  },
+  // Add more ticket data as needed
 ];
 
-const Analytics = () => {
+const TicketsPage = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Analytics Overview</h1>
+        <h1 className="text-2xl font-bold">Support Tickets</h1>
         
         <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle>Sales by Product</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
-                  <XAxis dataKey="category" stroke="#71717a" />
-                  <YAxis stroke="#71717a" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#18181b",
-                      border: "1px solid #27272a",
-                    }}
-                  />
-                  <Bar dataKey="sales" fill="#8b5cf6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Ticket ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Issue</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tickets.map((ticket) => (
+                <TableRow key={ticket.id}>
+                  <TableCell>{ticket.id}</TableCell>
+                  <TableCell>{ticket.customer}</TableCell>
+                  <TableCell>{ticket.issue}</TableCell>
+                  <TableCell>{ticket.status}</TableCell>
+                  <TableCell>{ticket.priority}</TableCell>
+                  <TableCell>{ticket.created}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Card>
       </div>
     </Layout>
   );
 };
 
-export default Analytics;
+export default TicketsPage;

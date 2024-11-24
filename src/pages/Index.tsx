@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import StatCard from "@/components/dashboard/StatCard";
 import RevenueChart from "@/components/dashboard/RevenueChart";
-import { Users, DollarSign, ArrowUpRight, LineChart } from "lucide-react";
+import { Ticket, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 const Index = () => {
   return (
@@ -9,28 +9,28 @@ const Index = () => {
       <div className="space-y-6">
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Total Revenue"
-            value="$45,231.89"
-            description="+20.1% from last month"
-            icon={DollarSign}
+            title="Open Tickets"
+            value="42"
+            description="12 high priority"
+            icon={Ticket}
           />
           <StatCard
-            title="Active Users"
-            value="2,350"
-            description="+180 new users"
-            icon={Users}
-          />
-          <StatCard
-            title="Conversion Rate"
-            value="3.2%"
-            description="+2.4% from last week"
-            icon={ArrowUpRight}
-          />
-          <StatCard
-            title="Active Sessions"
-            value="1,420"
+            title="Average Response Time"
+            value="2.5h"
             description="Last 24 hours"
-            icon={LineChart}
+            icon={Clock}
+          />
+          <StatCard
+            title="Resolved Today"
+            value="28"
+            description="+8 from yesterday"
+            icon={CheckCircle2}
+          />
+          <StatCard
+            title="Critical Issues"
+            value="3"
+            description="Needs attention"
+            icon={AlertCircle}
           />
         </div>
         <RevenueChart />

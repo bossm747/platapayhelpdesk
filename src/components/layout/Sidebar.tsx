@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { LayoutDashboard, BarChart2, Users, Settings, X } from "lucide-react";
+import { LayoutDashboard, BarChart2, Users, Settings, X, Ticket, MessageSquare, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -11,9 +11,9 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-    { icon: BarChart2, label: "Analytics", path: "/analytics" },
-    { icon: Users, label: "Team", path: "/team" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: Ticket, label: "Tickets", path: "/analytics" },
+    { icon: MessageSquare, label: "Support Chat", path: "/team" },
+    { icon: HelpCircle, label: "Knowledge Base", path: "/settings" },
   ];
 
   return (
@@ -28,8 +28,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     >
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg" />
-          <span className="text-lg font-semibold">Startup OS</span>
+          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold">P</span>
+          </div>
+          <span className="text-lg font-semibold">PlataPay</span>
         </div>
         <Button
           variant="ghost"
