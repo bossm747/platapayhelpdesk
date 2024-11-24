@@ -9,6 +9,7 @@ import {
   Users, 
   Zap,
   Link as LinkIcon,
+  UserCircle,
   X 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       label: "Settings", 
       path: "/settings",
       subItems: [
+        { icon: UserCircle, label: "Profile", path: "/settings/profile" },
         { icon: Users, label: "Team", path: "/settings/team" },
         { icon: Zap, label: "Automation", path: "/settings/automation" },
         { icon: LinkIcon, label: "Integrations", path: "/settings/integration" },
