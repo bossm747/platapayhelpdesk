@@ -42,5 +42,11 @@ export const generateBackendCode = async (prompt: string) => {
     }]
   });
 
-  return message.content[0].text;
+  // Handle the response content properly
+  const content = message.content[0];
+  if ('type' in content && content.type === 'text') {
+    return content.value;
+  }
+  
+  throw new Error('Unexpected response format from Claude');
 };
