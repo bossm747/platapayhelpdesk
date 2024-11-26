@@ -37,10 +37,8 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
     
     setIsSaving(true);
     try {
-      // Save to Supabase (encrypted)
       await saveApiKey(
         title.toLowerCase().replace(/\s+/g, '_'),
-        // In a real app, encrypt this before saving
         apiKey
       );
 
