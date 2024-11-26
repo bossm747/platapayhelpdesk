@@ -42,7 +42,7 @@ const App = () => {
   }));
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem themes={["light", "dark", "purple"]}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <Toaster />

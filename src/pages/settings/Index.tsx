@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -54,10 +54,10 @@ const SettingsPage = () => {
                       Dark
                     </div>
                   </SelectItem>
-                  <SelectItem value="system">
+                  <SelectItem value="purple">
                     <div className="flex items-center gap-2">
-                      <Monitor className="w-4 h-4" />
-                      System
+                      <Palette className="w-4 h-4" />
+                      Purple
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -86,11 +86,11 @@ const SettingsPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleThemeChange("system")}
-                className={theme === "system" ? "border-primary" : ""}
+                onClick={() => handleThemeChange("purple")}
+                className={theme === "purple" ? "border-primary" : ""}
               >
-                <Monitor className="w-4 h-4 mr-2" />
-                System
+                <Palette className="w-4 h-4 mr-2" />
+                Purple
               </Button>
             </div>
           </CardContent>
