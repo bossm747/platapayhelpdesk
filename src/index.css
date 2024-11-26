@@ -35,5 +35,23 @@
   }
   body {
     @apply bg-background text-foreground font-['Inter'];
+    background-image: url('/purple-gradient-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
   }
+}
+
+/* Add a subtle overlay to improve text readability */
+.bg-overlay {
+  @apply bg-black/20 backdrop-blur-sm;
+}
+
+/* Ensure cards and other UI elements have proper contrast */
+.card, 
+.popover, 
+.dropdown-menu {
+  @apply bg-zinc-900/80 backdrop-blur-sm;
 }
