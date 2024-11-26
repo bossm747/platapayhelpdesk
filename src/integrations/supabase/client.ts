@@ -17,9 +17,6 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true
     },
-    db: {
-      schema: 'public'
-    },
     global: {
       headers: {
         'apikey': supabaseKey,
