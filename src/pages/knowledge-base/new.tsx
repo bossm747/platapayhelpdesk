@@ -38,6 +38,13 @@ const NewArticle = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!title || !content || !category) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Here you would typically make an API call to save the article
     toast.success("Article created successfully");
     navigate("/knowledge-base");
   };
@@ -57,7 +64,10 @@ const NewArticle = () => {
 
         <Card className="bg-zinc-900 border-zinc-800">
           <CardHeader>
-            <CardTitle>Upload File for AI Analysis</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Upload File for AI Analysis
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
