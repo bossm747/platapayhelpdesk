@@ -37,12 +37,12 @@ export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> 
     const response = completion.choices[0]?.message?.content;
     if (!response) throw new Error("No response from AI");
 
-    // Parse AI response (this is a simple implementation)
+    // Parse AI response
     const lines = response.split('\n');
-    const title = lines.find(l => l.includes('title'))?.split(':')[1]?.trim() || file.name;
-    const category = lines.find(l => l.includes('category'))?.split(':')[1]?.trim() || 'General';
-    const summary = lines.find(l => l.includes('summary'))?.split(':')[1]?.trim() || '';
-    const tags = lines.find(l => l.includes('tags'))?.split(':')[1]?.split(',').map(t => t.trim()) || [];
+    const title = lines.find(l => l.toLowerCase().includes('title'))?.split(':')[1]?.trim() || file.name;
+    const category = lines.find(l => l.toLowerCase().includes('category'))?.split(':')[1]?.trim() || 'General';
+    const summary = lines.find(l => l.toLowerCase().includes('summary'))?.split(':')[1]?.trim() || '';
+    const tags = lines.find(l => l.toLowerCase().includes('tags'))?.split(':')[1]?.split(',').map(t => t.trim()) || [];
 
     return {
       title,
