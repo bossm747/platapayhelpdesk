@@ -1,6 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export { supabase };
+
 // Helper functions for knowledge base
 export async function saveArticle(article: {
   title: string;
