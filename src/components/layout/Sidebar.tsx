@@ -51,12 +51,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       )}
     >
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">P</span>
-          </div>
-          <span className="text-lg font-semibold">PlataPay</span>
-        </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img 
+            src="/platapay-logo.png" 
+            alt="PlataPay" 
+            className="w-8 h-8"
+          />
+          <span className="text-lg font-semibold text-white">PlataPay</span>
+        </Link>
         <Button
           variant="ghost"
           size="icon"
