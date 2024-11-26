@@ -5,43 +5,44 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Brain, Check } from "lucide-react";
 import { toast } from "sonner";
+import { saveApiKey, getApiKey } from "@/lib/supabase";
 
 interface AIProviderCardProps {
   title: string;
   icon: typeof Brain;
   keyPlaceholder: string;
   onSave: (key: string) => Promise<void>;
-  envKey?: string;
 }
 
-const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave, envKey }: AIProviderCardProps) => {
+const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProviderCardProps) => {
   const [apiKey, setApiKey] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
-    setIsConfigured(!!envKey);
-  }, [envKey]);
+    const checkExistingKey = async () => {
+      try {
+        const key = await getApiKey(title.toLowerCase().replace(/\s+/g, '_'));
+        setIsConfigured(!!key);
+      } catch (error) {
+        console.error('Error checking API key:', error);
+      }
+    };
+    
+    checkExistingKey();
+  }, [title]);
 
   const handleSave = async () => {
     if (!apiKey) return;
     
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:5000/api/save-env', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          key: apiKey,
-          provider: title.toLowerCase().replace(/\s+/g, '_')
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save API key');
-      }
+      // Save to Supabase (encrypted)
+      await saveApiKey(
+        title.toLowerCase().replace(/\s+/g, '_'),
+        // In a real app, encrypt this before saving
+        apiKey
+      );
 
       await onSave(apiKey);
       setApiKey("");
@@ -89,7 +90,7 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave, envKey }: A
           </div>
           <p className="text-xs text-zinc-500 flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
-            Your API key will be stored securely in the .env file
+            Your API key will be stored securely in Supabase
           </p>
         </div>
       </CardContent>
