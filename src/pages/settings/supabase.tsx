@@ -3,7 +3,6 @@ import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Database, Table, Key, Users, Shield, FileJson } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -12,7 +11,7 @@ const SupabasePage = () => {
   const [selectedTable, setSelectedTable] = useState("");
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const fetchTableData = async (tableName: string) => {
+  const fetchTableData = async (tableName: "api_keys" | "articles") => {
     try {
       const { data, error } = await supabase
         .from(tableName)
@@ -31,9 +30,8 @@ const SupabasePage = () => {
   };
 
   const tables = [
-    { name: 'articles', icon: FileJson },
-    { name: 'api_keys', icon: Key },
-    { name: 'users', icon: Users },
+    { name: 'api_keys' as const, icon: Key },
+    { name: 'articles' as const, icon: FileJson },
   ];
 
   return (
