@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Brain } from "lucide-react";
+import { AlertCircle, Brain, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface AIProviderCardProps {
@@ -11,11 +11,17 @@ interface AIProviderCardProps {
   icon: typeof Brain;
   keyPlaceholder: string;
   onSave: (key: string) => Promise<void>;
+  envKey?: string;
 }
 
-const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProviderCardProps) => {
+const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave, envKey }: AIProviderCardProps) => {
   const [apiKey, setApiKey] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+
+  useEffect(() => {
+    setIsConfigured(!!envKey);
+  }, [envKey]);
 
   const handleSave = async () => {
     if (!apiKey) return;
@@ -24,6 +30,7 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
     try {
       await onSave(apiKey);
       setApiKey("");
+      setIsConfigured(true);
       toast.success(`${title} API key saved successfully!`);
     } catch (error) {
       toast.error(`Failed to save ${title} API key. Please try again.`);
@@ -38,6 +45,12 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
         <CardTitle className="flex items-center gap-2">
           <Icon className="w-5 h-5" />
           {title}
+          {isConfigured && (
+            <span className="flex items-center gap-1 text-sm text-green-400 ml-auto">
+              <Check className="w-4 h-4" />
+              Configured
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -49,13 +62,13 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={keyPlaceholder}
+              placeholder={isConfigured ? "API key already set" : keyPlaceholder}
             />
             <Button
               onClick={handleSave}
               disabled={!apiKey || isSaving}
             >
-              Save Key
+              {isConfigured ? "Update Key" : "Save Key"}
             </Button>
           </div>
           <p className="text-xs text-zinc-500 flex items-center gap-1">
