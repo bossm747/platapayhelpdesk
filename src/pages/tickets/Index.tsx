@@ -18,58 +18,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import TicketPriorityBadge from "@/components/tickets/TicketPriorityBadge";
+import TicketCategoryBadge from "@/components/tickets/TicketCategoryBadge";
+import SLAIndicator from "@/components/tickets/SLAIndicator";
 import { Search, Plus, Filter } from "lucide-react";
+import { Ticket, TicketStatus, TicketPriority, TicketCategory } from "@/types/ticket";
 
-// Mock data - will be replaced with API calls
-const tickets = [
+// Mock data
+const tickets: Ticket[] = [
   {
     id: "TKT-001",
     subject: "Payment Failed",
+    description: "Unable to process payment",
     customer: "John Doe",
     status: "open",
     priority: "high",
-    category: "payment",
+    category: "billing",
     created: "2024-02-20T10:30:00",
     updated: "2024-02-20T14:45:00",
+    sla: {
+      deadline: "2024-02-21T10:30:00",
+      breached: false,
+    },
   },
   {
     id: "TKT-002",
     subject: "Account Access Issues",
+    description: "Cannot login to account",
     customer: "Jane Smith",
     status: "in_progress",
     priority: "medium",
     category: "account",
     created: "2024-02-19T15:20:00",
     updated: "2024-02-20T09:15:00",
+    assignedTo: "Support Agent",
+    sla: {
+      deadline: "2024-02-20T15:20:00",
+      breached: true,
+    },
   },
-  // Add more mock tickets as needed
 ];
 
 const TicketsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<TicketCategory | "all">("all");
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: TicketStatus) => {
     const colors = {
       open: "bg-yellow-500/10 text-yellow-500",
       in_progress: "bg-blue-500/10 text-blue-500",
       resolved: "bg-green-500/10 text-green-500",
       closed: "bg-zinc-500/10 text-zinc-500",
     };
-    return colors[status as keyof typeof colors] || colors.open;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    const colors = {
-      low: "bg-zinc-500/10 text-zinc-500",
-      medium: "bg-blue-500/10 text-blue-500",
-      high: "bg-orange-500/10 text-orange-500",
-      urgent: "bg-red-500/10 text-red-500",
-    };
-    return colors[priority as keyof typeof colors] || colors.medium;
+    return colors[status];
   };
 
   return (
@@ -94,8 +98,8 @@ const TicketsPage = () => {
             />
           </div>
           
-          <div className="flex gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <div className="flex flex-wrap gap-2">
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as TicketStatus | "all")}>
               <SelectTrigger className="w-[140px]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Status" />
@@ -109,7 +113,7 @@ const TicketsPage = () => {
               </SelectContent>
             </Select>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <Select value={priorityFilter} onValueChange={(value) => setPriorityFilter(value as TicketPriority | "all")}>
               <SelectTrigger className="w-[140px]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Priority" />
@@ -122,10 +126,24 @@ const TicketsPage = () => {
                 <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as TicketCategory | "all")}>
+              <SelectTrigger className="w-[140px]">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="technical">Technical</SelectItem>
+                <SelectItem value="billing">Billing</SelectItem>
+                <SelectItem value="account">Account</SelectItem>
+                <SelectItem value="general">General</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        <div className="border border-zinc-800 rounded-lg">
+        <div className="border border-zinc-800 rounded-lg overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -134,6 +152,8 @@ const TicketsPage = () => {
                 <TableHead>Customer</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Priority</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>SLA</TableHead>
                 <TableHead>Last Updated</TableHead>
               </TableRow>
             </TableHeader>
@@ -148,14 +168,23 @@ const TicketsPage = () => {
                   <TableCell>{ticket.subject}</TableCell>
                   <TableCell>{ticket.customer}</TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(ticket.status)}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
                       {ticket.status.replace('_', ' ')}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getPriorityColor(ticket.priority)}>
-                      {ticket.priority}
-                    </Badge>
+                    <TicketPriorityBadge priority={ticket.priority} />
+                  </TableCell>
+                  <TableCell>
+                    <TicketCategoryBadge category={ticket.category} />
+                  </TableCell>
+                  <TableCell>
+                    {ticket.sla && (
+                      <SLAIndicator
+                        deadline={ticket.sla.deadline}
+                        breached={ticket.sla.breached}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     {new Date(ticket.updated).toLocaleDateString()}
