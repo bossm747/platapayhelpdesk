@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import OpenAI from 'openai';
 
 interface AIAnalysisResult {
   title?: string;
@@ -7,35 +8,51 @@ interface AIAnalysisResult {
   tags?: string[];
 }
 
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
+
 export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> {
   try {
-    // Here you would integrate with your preferred AI service (e.g., OpenAI)
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // Simulate API call to AI service
-    // In production, replace this with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Mock analysis results based on file type and name
-    const fileType = file.type;
-    const fileName = file.name.split('.')[0];
+    // Read file content
+    const text = await file.text();
     
-    let category = "General";
-    if (fileType.includes("pdf")) category = "Documentation";
-    else if (fileType.includes("doc")) category = "Guide";
-    else if (fileType.includes("txt")) category = "Technical";
+    // Prepare the prompt for OpenAI
+    const prompt = `Analyze this document and provide:
+    1. A clear title
+    2. A category (Technical, Documentation, Guide, or General)
+    3. A concise summary
+    4. Relevant tags
+    
+    Document content:
+    ${text.slice(0, 1500)}`; // Limit content length
+
+    // Call OpenAI API
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "gpt-4o",
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    if (!response) throw new Error("No response from AI");
+
+    // Parse AI response (this is a simple implementation)
+    const lines = response.split('\n');
+    const title = lines.find(l => l.includes('title'))?.split(':')[1]?.trim() || file.name;
+    const category = lines.find(l => l.includes('category'))?.split(':')[1]?.trim() || 'General';
+    const summary = lines.find(l => l.includes('summary'))?.split(':')[1]?.trim() || '';
+    const tags = lines.find(l => l.includes('tags'))?.split(':')[1]?.split(',').map(t => t.trim()) || [];
 
     return {
-      title: fileName.split('-').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' '),
+      title,
       category,
-      summary: `This is an automatically generated summary for ${fileName}. The content has been analyzed and processed for better understanding. This article contains important information about ${fileName.toLowerCase()}.`,
-      tags: [category.toLowerCase(), 'auto-generated', 'needs-review']
+      summary,
+      tags: [...tags, 'ai-generated']
     };
   } catch (error) {
-    toast.error("Failed to analyze file content");
+    console.error('AI Analysis error:', error);
+    toast.error("Failed to analyze file content. Please try again or fill the form manually.");
     throw error;
   }
 }
