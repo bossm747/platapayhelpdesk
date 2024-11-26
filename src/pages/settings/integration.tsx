@@ -3,21 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Link2, Brain, Sparkles, Bot, Cpu, Code } from "lucide-react";
 import AIProviderCard from "@/components/settings/AIProviderCard";
 import IntegrationsList from "@/components/settings/IntegrationsList";
+import { saveApiKey } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const Integration = () => {
-  const saveEnvKey = async (key: string, provider: string) => {
-    const response = await fetch('/api/save-env', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        key,
-        provider: provider.toLowerCase().replace(/\s+/g, '_')
-      }),
-    });
-
-    if (!response.ok) throw new Error('Failed to save API key');
+  const handleSaveKey = async (key: string, provider: string) => {
+    try {
+      await saveApiKey(provider.toLowerCase(), key);
+      toast.success(`${provider} API key saved successfully`);
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      toast.error(`Failed to save ${provider} API key`);
+    }
   };
 
   const aiProviders = [
@@ -25,37 +22,37 @@ const Integration = () => {
       title: "OpenAI",
       icon: Brain,
       placeholder: "Enter your OpenAI API key",
-      onSave: (key: string) => saveEnvKey(key, "OPENAI")
+      onSave: (key: string) => handleSaveKey(key, "OPENAI")
     },
     {
       title: "Anthropic",
       icon: Sparkles,
       placeholder: "Enter your Anthropic API key",
-      onSave: (key: string) => saveEnvKey(key, "ANTHROPIC")
+      onSave: (key: string) => handleSaveKey(key, "ANTHROPIC")
     },
     {
       title: "Google Gemini",
       icon: Bot,
       placeholder: "Enter your Gemini API key",
-      onSave: (key: string) => saveEnvKey(key, "GEMINI")
+      onSave: (key: string) => handleSaveKey(key, "GEMINI")
     },
     {
       title: "DeepSeek",
       icon: Cpu,
       placeholder: "Enter your DeepSeek API key",
-      onSave: (key: string) => saveEnvKey(key, "DEEPSEEK")
+      onSave: (key: string) => handleSaveKey(key, "DEEPSEEK")
     },
     {
       title: "Mistral",
       icon: Code,
       placeholder: "Enter your Mistral API key",
-      onSave: (key: string) => saveEnvKey(key, "MISTRAL")
+      onSave: (key: string) => handleSaveKey(key, "MISTRAL")
     },
     {
       title: "Custom OpenAI Compatible",
       icon: Brain,
       placeholder: "Enter your API key",
-      onSave: (key: string) => saveEnvKey(key, "CUSTOM_OPENAI")
+      onSave: (key: string) => handleSaveKey(key, "CUSTOM_OPENAI")
     }
   ];
 
