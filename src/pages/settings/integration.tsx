@@ -5,8 +5,25 @@ import AIProviderCard from "@/components/settings/AIProviderCard";
 import IntegrationsList from "@/components/settings/IntegrationsList";
 import { saveApiKey } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Integration = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to access this page");
+        navigate("/login");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
+
   const handleSaveKey = async (key: string, provider: string) => {
     try {
       await saveApiKey(provider.toLowerCase(), key);
