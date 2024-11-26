@@ -60,7 +60,9 @@ export async function saveApiKey(provider: string, key: string) {
           key,
           updated_at: new Date().toISOString(),
         }
-      ])
+      ], {
+        onConflict: 'provider'
+      })
       .select()
       .single();
 
@@ -69,7 +71,6 @@ export async function saveApiKey(provider: string, key: string) {
       throw error;
     }
     
-    toast.success('API key saved successfully');
     return data;
   } catch (error) {
     console.error('Error saving API key:', error);
@@ -83,15 +84,16 @@ export async function getApiKey(provider: string) {
       .from('api_keys')
       .select('key')
       .eq('provider', provider)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
-      toast.error('Failed to fetch API key');
-      throw error;
+    if (error) {
+      console.error('Error fetching API key:', error);
+      return null;
     }
+    
     return data?.key;
   } catch (error) {
     console.error('Error getting API key:', error);
-    throw error;
+    return null;
   }
 }
