@@ -51,18 +51,26 @@ export async function getArticles() {
 
 // Helper functions for API keys
 export async function saveApiKey(provider: string, key: string) {
+  const { data: session } = await supabase.auth.getSession();
+  
+  if (!session?.session?.access_token) {
+    toast.error('You must be logged in to save API keys');
+    throw new Error('Not authenticated');
+  }
+
   try {
     const { data, error } = await supabase
       .from('api_keys')
-      .upsert([
+      .upsert(
         {
           provider,
           key,
           updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'provider'
         }
-      ], {
-        onConflict: 'provider'
-      })
+      )
       .select()
       .single();
 
@@ -79,6 +87,13 @@ export async function saveApiKey(provider: string, key: string) {
 }
 
 export async function getApiKey(provider: string) {
+  const { data: session } = await supabase.auth.getSession();
+  
+  if (!session?.session?.access_token) {
+    toast.error('You must be logged in to access API keys');
+    throw new Error('Not authenticated');
+  }
+
   try {
     const { data, error } = await supabase
       .from('api_keys')

@@ -7,6 +7,7 @@ import { AlertCircle, Brain, Check } from "lucide-react";
 import { toast } from "sonner";
 import { saveApiKey, getApiKey } from "@/lib/supabase";
 import { initializeAnthropic } from "@/lib/claude";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AIProviderCardProps {
   title: string;
@@ -20,9 +21,32 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
   const [isSaving, setIsSaving] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const checkExistingKey = async () => {
+      if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         const key = await getApiKey(title.toLowerCase().replace(/\s+/g, '_'));
@@ -40,9 +64,14 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
     };
     
     checkExistingKey();
-  }, [title]);
+  }, [title, isAuthenticated]);
 
   const handleSave = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to save API keys");
+      return;
+    }
+
     if (!apiKey) {
       toast.error("Please enter an API key");
       return;
@@ -85,6 +114,22 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
           <div className="animate-pulse flex space-y-4">
             <div className="h-4 bg-zinc-800 rounded w-3/4"></div>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="bg-zinc-900 border-zinc-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon className="w-5 h-5" />
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-zinc-400">Please log in to manage API keys.</p>
         </CardContent>
       </Card>
     );
