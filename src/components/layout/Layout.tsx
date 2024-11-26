@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       if (sidebarOpen && 
           sidebarRef.current && 
           !sidebarRef.current.contains(event.target as Node) &&
-          window.innerWidth < 768) { // Only on mobile
+          window.innerWidth < 768) {
         setSidebarOpen(false);
       }
     };

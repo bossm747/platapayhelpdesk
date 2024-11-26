@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
@@ -41,40 +42,42 @@ const App = () => {
   }));
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Dashboard & Analytics */}
-            <Route path="/" element={<Index />} />
-            <Route path="/analytics" element={<Analytics />} />
-            
-            {/* Ticket Management */}
-            <Route path="/tickets" element={<Tickets />} />
-            <Route path="/tickets/new" element={<NewTicket />} />
-            <Route path="/tickets/:id" element={<TicketDetails />} />
-            
-            {/* Knowledge Base */}
-            <Route path="/knowledge-base" element={<KnowledgeBase />} />
-            <Route path="/knowledge-base/new" element={<NewArticle />} />
-            <Route path="/knowledge-base/:id" element={<Article />} />
-            
-            {/* Customer Support */}
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/chat/:id" element={<ChatRoom />} />
-            
-            {/* Settings & Administration */}
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/team" element={<Team />} />
-            <Route path="/settings/automation" element={<Automation />} />
-            <Route path="/settings/integration" element={<Integration />} />
-            <Route path="/settings/profile" element={<Profile />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Dashboard & Analytics */}
+              <Route path="/" element={<Index />} />
+              <Route path="/analytics" element={<Analytics />} />
+              
+              {/* Ticket Management */}
+              <Route path="/tickets" element={<Tickets />} />
+              <Route path="/tickets/new" element={<NewTicket />} />
+              <Route path="/tickets/:id" element={<TicketDetails />} />
+              
+              {/* Knowledge Base */}
+              <Route path="/knowledge-base" element={<KnowledgeBase />} />
+              <Route path="/knowledge-base/new" element={<NewArticle />} />
+              <Route path="/knowledge-base/:id" element={<Article />} />
+              
+              {/* Customer Support */}
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/chat/:id" element={<ChatRoom />} />
+              
+              {/* Settings & Administration */}
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/team" element={<Team />} />
+              <Route path="/settings/automation" element={<Automation />} />
+              <Route path="/settings/integration" element={<Integration />} />
+              <Route path="/settings/profile" element={<Profile />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
