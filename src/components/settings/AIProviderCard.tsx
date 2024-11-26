@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, Brain, Check } from "lucide-react";
 import { toast } from "sonner";
 import { saveApiKey, getApiKey } from "@/lib/supabase";
+import { initializeAnthropic } from "@/lib/claude";
 
 interface AIProviderCardProps {
   title: string;
@@ -24,6 +25,11 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
       try {
         const key = await getApiKey(title.toLowerCase().replace(/\s+/g, '_'));
         setIsConfigured(!!key);
+        
+        // Initialize Anthropic if it's the Anthropic provider
+        if (title.toLowerCase() === 'anthropic' && key) {
+          await initializeAnthropic();
+        }
       } catch (error) {
         console.error('Error checking API key:', error);
       }
@@ -43,6 +49,12 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
       );
 
       await onSave(apiKey);
+      
+      // Initialize Anthropic if it's the Anthropic provider
+      if (title.toLowerCase() === 'anthropic') {
+        await initializeAnthropic();
+      }
+      
       setApiKey("");
       setIsConfigured(true);
       toast.success(`${title} API key saved successfully!`);
