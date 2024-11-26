@@ -19,19 +19,23 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
   const [apiKey, setApiKey] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkExistingKey = async () => {
       try {
+        setIsLoading(true);
         const key = await getApiKey(title.toLowerCase().replace(/\s+/g, '_'));
         setIsConfigured(!!key);
         
-        // Initialize Anthropic if it's the Anthropic provider
         if (title.toLowerCase() === 'anthropic' && key) {
           await initializeAnthropic();
         }
       } catch (error) {
         console.error('Error checking API key:', error);
+        toast.error(`Failed to check ${title} API key configuration`);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -39,7 +43,10 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
   }, [title]);
 
   const handleSave = async () => {
-    if (!apiKey) return;
+    if (!apiKey) {
+      toast.error("Please enter an API key");
+      return;
+    }
     
     setIsSaving(true);
     try {
@@ -50,7 +57,6 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
 
       await onSave(apiKey);
       
-      // Initialize Anthropic if it's the Anthropic provider
       if (title.toLowerCase() === 'anthropic') {
         await initializeAnthropic();
       }
@@ -65,6 +71,24 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-zinc-900 border-zinc-800">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon className="w-5 h-5" />
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse flex space-y-4">
+            <div className="h-4 bg-zinc-800 rounded w-3/4"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-zinc-900 border-zinc-800">
@@ -95,7 +119,7 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave }: AIProvide
               onClick={handleSave}
               disabled={!apiKey || isSaving}
             >
-              {isConfigured ? "Update Key" : "Save Key"}
+              {isSaving ? "Saving..." : (isConfigured ? "Update Key" : "Save Key")}
             </Button>
           </div>
           <p className="text-xs text-zinc-500 flex items-center gap-1">
