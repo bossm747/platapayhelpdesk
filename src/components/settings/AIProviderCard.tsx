@@ -28,11 +28,27 @@ const AIProviderCard = ({ title, icon: Icon, keyPlaceholder, onSave, envKey }: A
     
     setIsSaving(true);
     try {
+      const response = await fetch('http://localhost:5000/api/save-env', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          key: apiKey,
+          provider: title.toLowerCase().replace(/\s+/g, '_')
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save API key');
+      }
+
       await onSave(apiKey);
       setApiKey("");
       setIsConfigured(true);
       toast.success(`${title} API key saved successfully!`);
     } catch (error) {
+      console.error('Error saving API key:', error);
       toast.error(`Failed to save ${title} API key. Please try again.`);
     } finally {
       setIsSaving(false);
