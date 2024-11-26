@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Link2, AlertCircle, Check, X } from "lucide-react";
+import { Link2, AlertCircle, Check, X, Brain } from "lucide-react";
 
 interface Integration {
   id: string;
@@ -39,6 +39,8 @@ const Integration = () => {
     }
   ]);
 
+  const [openAIKey, setOpenAIKey] = useState("");
+
   const toggleIntegration = (id: string) => {
     setIntegrations(prevIntegrations =>
       prevIntegrations.map(integration =>
@@ -68,6 +70,25 @@ const Integration = () => {
     toast.success("API key saved successfully");
   };
 
+  const saveOpenAIKey = async () => {
+    try {
+      const response = await fetch('/api/save-env', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key: openAIKey }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save API key');
+
+      toast.success("OpenAI API key saved successfully! Please restart the application for changes to take effect.");
+      setOpenAIKey("");
+    } catch (error) {
+      toast.error("Failed to save OpenAI API key. Please try again.");
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -78,6 +99,39 @@ const Integration = () => {
             Add New Integration
           </Button>
         </div>
+
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              OpenAI Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="openai-key">OpenAI API Key</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="openai-key"
+                  type="password"
+                  value={openAIKey}
+                  onChange={(e) => setOpenAIKey(e.target.value)}
+                  placeholder="Enter your OpenAI API key"
+                />
+                <Button
+                  onClick={saveOpenAIKey}
+                  disabled={!openAIKey}
+                >
+                  Save Key
+                </Button>
+              </div>
+              <p className="text-xs text-zinc-500 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Your API key will be stored securely in the .env file
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6">
           {integrations.map((integration) => (
