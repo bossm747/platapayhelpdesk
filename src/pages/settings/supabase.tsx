@@ -7,11 +7,13 @@ import { toast } from "sonner";
 import { Database, Table, Key, Users, Shield, FileJson } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+type TableName = "api_keys" | "articles";
+
 const SupabasePage = () => {
-  const [selectedTable, setSelectedTable] = useState("");
+  const [selectedTable, setSelectedTable] = useState<TableName | "">("");
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const fetchTableData = async (tableName: "api_keys" | "articles") => {
+  const fetchTableData = async (tableName: TableName) => {
     try {
       const { data, error } = await supabase
         .from(tableName)
@@ -32,7 +34,7 @@ const SupabasePage = () => {
   const tables = [
     { name: 'api_keys' as const, icon: Key },
     { name: 'articles' as const, icon: FileJson },
-  ];
+  ] as const;
 
   return (
     <Layout>
