@@ -43,6 +43,14 @@ app.post('/api/save-env', async (req, res) => {
     // Update or add new key
     envMap.set(envVarName, key);
 
+    // Keep existing Supabase configuration
+    if (!envMap.has('VITE_SUPABASE_URL')) {
+      envMap.set('VITE_SUPABASE_URL', process.env.VITE_SUPABASE_URL || '');
+    }
+    if (!envMap.has('VITE_SUPABASE_ANON_KEY')) {
+      envMap.set('VITE_SUPABASE_ANON_KEY', process.env.VITE_SUPABASE_ANON_KEY || '');
+    }
+
     // Write back to file
     const newEnvContent = Array.from(envMap.entries())
       .map(([key, value]) => `${key}=${value}`)
