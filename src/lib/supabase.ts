@@ -1,16 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables. Using fallback values.');
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'https://your-project.supabase.co',
-  supabaseKey || 'your-anon-key'
-);
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 // Helper functions for knowledge base
 export async function saveArticle(article: {
@@ -26,7 +15,12 @@ export async function saveArticle(article: {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      toast.error('Failed to save article');
+      throw error;
+    }
+    
+    toast.success('Article saved successfully');
     return data;
   } catch (error) {
     console.error('Error saving article:', error);
@@ -41,7 +35,11 @@ export async function getArticles() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      toast.error('Failed to fetch articles');
+      throw error;
+    }
+    
     return data;
   } catch (error) {
     console.error('Error getting articles:', error);
@@ -50,21 +48,26 @@ export async function getArticles() {
 }
 
 // Helper functions for API keys
-export async function saveApiKey(provider: string, encryptedKey: string) {
+export async function saveApiKey(provider: string, key: string) {
   try {
     const { data, error } = await supabase
       .from('api_keys')
       .upsert([
         {
           provider,
-          key: encryptedKey,
+          key,
           updated_at: new Date().toISOString(),
         }
       ])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      toast.error('Failed to save API key');
+      throw error;
+    }
+    
+    toast.success('API key saved successfully');
     return data;
   } catch (error) {
     console.error('Error saving API key:', error);
@@ -80,7 +83,10 @@ export async function getApiKey(provider: string) {
       .eq('provider', provider)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+    if (error && error.code !== 'PGRST116') {
+      toast.error('Failed to fetch API key');
+      throw error;
+    }
     return data?.key;
   } catch (error) {
     console.error('Error getting API key:', error);

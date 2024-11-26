@@ -8,7 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Load environment variables
 dotenv.config();
 
 app.post('/api/save-env', async (req, res) => {
@@ -25,11 +24,9 @@ app.post('/api/save-env', async (req, res) => {
     try {
       envContent = fs.readFileSync(envPath, 'utf-8');
     } catch (error) {
-      // File doesn't exist, create it
       envContent = '';
     }
 
-    // Parse existing env content
     const envLines = envContent.split('\n').filter(line => line.trim());
     const envMap = new Map();
     
@@ -40,7 +37,6 @@ app.post('/api/save-env', async (req, res) => {
       }
     });
 
-    // Update or add new key
     envMap.set(envVarName, key);
 
     // Keep existing Supabase configuration
@@ -51,7 +47,6 @@ app.post('/api/save-env', async (req, res) => {
       envMap.set('VITE_SUPABASE_ANON_KEY', process.env.VITE_SUPABASE_ANON_KEY || '');
     }
 
-    // Write back to file
     const newEnvContent = Array.from(envMap.entries())
       .map(([key, value]) => `${key}=${value}`)
       .join('\n');

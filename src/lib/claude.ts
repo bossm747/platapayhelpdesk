@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { supabase } from './supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 let anthropic: Anthropic | null = null;
 
@@ -20,6 +21,7 @@ export const initializeAnthropic = async () => {
     return false;
   } catch (error) {
     console.error('Error initializing Anthropic:', error);
+    toast.error('Failed to initialize Anthropic API');
     return false;
   }
 };
@@ -28,25 +30,31 @@ export const generateBackendCode = async (prompt: string) => {
   if (!anthropic) {
     const initialized = await initializeAnthropic();
     if (!initialized) {
+      toast.error('Anthropic API key not configured');
       throw new Error('Anthropic API key not configured');
     }
   }
 
-  const message = await anthropic.messages.create({
-    model: 'claude-3-sonnet-20240229',
-    max_tokens: 4096,
-    messages: [{
-      role: 'user',
-      content: `Generate backend code for the following task: ${prompt}. 
-                Please provide complete, production-ready code with proper error handling and comments.`
-    }]
-  });
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-3-sonnet-20240229',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: `Generate backend code for the following task: ${prompt}. 
+                  Please provide complete, production-ready code with proper error handling and comments.`
+      }]
+    });
 
-  // Handle the response content properly
-  const content = message.content[0];
-  if ('text' in content) {
-    return content.text;
+    const content = message.content[0];
+    if ('text' in content) {
+      return content.text;
+    }
+    
+    throw new Error('Unexpected response format from Claude');
+  } catch (error) {
+    console.error('Error generating code:', error);
+    toast.error('Failed to generate code');
+    throw error;
   }
-  
-  throw new Error('Unexpected response format from Claude');
 };
