@@ -1,98 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import ChatMessage from "@/components/chat/ChatMessage";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Paperclip, Send } from "lucide-react";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Message {
-  id: string;
-  content: string;
-  sender_type: 'bot' | 'agent' | 'user';
-  created_at: string;
-  is_fallback: boolean;
-}
-
-interface Chat {
-  id: string;
-  customer_name: string;
-  customer_email: string;
-  status: string;
-}
+import { useChat } from "@/hooks/useChat";
+import ChatInput from "@/components/chat/ChatInput";
+import ChatMessages from "@/components/chat/ChatMessages";
 
 const ChatRoom = () => {
   const { id } = useParams();
-  const [newMessage, setNewMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [chat, setChat] = useState<Chat | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, chat, isLoading } = useChat(id);
 
-  useEffect(() => {
-    if (!id) return;
-
-    // Fetch chat details
-    const fetchChat = async () => {
-      const { data: chatData, error: chatError } = await supabase
-        .from('chats')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (chatError) {
-        toast.error('Error fetching chat details');
-        return;
-      }
-
-      setChat(chatData);
-    };
-
-    // Fetch messages
-    const fetchMessages = async () => {
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', id)
-        .order('created_at', { ascending: true });
-
-      if (messagesError) {
-        toast.error('Error fetching messages');
-        return;
-      }
-
-      setMessages(messagesData || []);
-    };
-
-    fetchChat();
-    fetchMessages();
-
-    // Subscribe to new messages
-    const subscription = supabase
-      .channel('messages')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${id}`,
-      }, payload => {
-        setMessages(current => [...current, payload.new as Message]);
-      })
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [id]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !chat) return;
-
+  const handleSubmit = async (newMessage: string) => {
+    if (!chat) return;
     setIsSubmitting(true);
 
     try {
@@ -132,14 +54,9 @@ const ChatRoom = () => {
 
       if (botMessageError) throw botMessageError;
 
-      if (isFallback) {
-        toast.info("Your request has been escalated to a human agent");
-      }
-
-      setNewMessage("");
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error("Failed to send message");
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -162,35 +79,13 @@ const ChatRoom = () => {
 
         <Card className="h-[calc(100vh-16rem)]">
           <div className="flex flex-col h-full">
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <ChatMessage
-                    key={message.id}
-                    message={message.content}
-                    sender={message.sender_type === 'user' ? chat.customer_name : 
-                           message.sender_type === 'bot' ? 'AI Assistant' : 'Support Agent'}
-                    timestamp={new Date(message.created_at).toLocaleString()}
-                    isAgent={message.sender_type !== 'user'}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-
+            <ChatMessages messages={messages} customerName={chat.customer_name} />
             <div className="border-t border-zinc-800 p-4">
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Button variant="outline" size="icon" type="button">
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-                <Input
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                />
-                <Button type="submit" disabled={isSubmitting}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </form>
+              <ChatInput 
+                chatId={id!} 
+                isSubmitting={isSubmitting}
+                onSubmit={handleSubmit}
+              />
             </div>
           </div>
         </Card>
