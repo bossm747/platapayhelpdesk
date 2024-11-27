@@ -63,7 +63,7 @@ export async function saveApiKey(provider: string, key: string) {
       .from('api_keys')
       .upsert(
         {
-          provider,
+          provider: provider.toUpperCase(),
           key,
           updated_at: new Date().toISOString(),
         },
@@ -98,7 +98,7 @@ export async function getApiKey(provider: string) {
     const { data, error } = await supabase
       .from('api_keys')
       .select('key')
-      .eq('provider', provider)
+      .eq('provider', provider.toUpperCase())
       .maybeSingle();
 
     if (error) {

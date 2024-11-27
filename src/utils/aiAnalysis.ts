@@ -15,7 +15,7 @@ export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> 
     const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('api_keys')
       .select('key')
-      .eq('provider', 'openai')
+      .eq('provider', 'OPENAI_API_KEY')
       .single();
 
     if (apiKeyError) {
