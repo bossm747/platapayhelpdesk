@@ -12,19 +12,25 @@ interface AIAnalysisResult {
 export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> {
   try {
     // First get the API key from Supabase
-    const { data: apiKey } = await supabase
+    const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('api_keys')
       .select('key')
       .eq('provider', 'openai')
       .single();
 
-    if (!apiKey?.key) {
+    if (apiKeyError) {
+      console.error('Error fetching API key:', apiKeyError);
+      toast.error('Failed to fetch OpenAI API key. Please ensure you are logged in and have configured the API key.');
+      throw new Error('Failed to fetch OpenAI API key');
+    }
+
+    if (!apiKeyData?.key) {
       toast.error('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
 
     const openai = new OpenAI({
-      apiKey: apiKey.key,
+      apiKey: apiKeyData.key,
       dangerouslyAllowBrowser: true
     });
 
