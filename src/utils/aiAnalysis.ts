@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import OpenAI from 'openai';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIAnalysisResult {
   title?: string;
@@ -8,13 +9,25 @@ interface AIAnalysisResult {
   tags?: string[];
 }
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
-
 export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> {
   try {
+    // First get the API key from Supabase
+    const { data: apiKey } = await supabase
+      .from('api_keys')
+      .select('key')
+      .eq('provider', 'openai')
+      .single();
+
+    if (!apiKey?.key) {
+      toast.error('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const openai = new OpenAI({
+      apiKey: apiKey.key,
+      dangerouslyAllowBrowser: true
+    });
+
     // Read file content
     const text = await file.text();
     
@@ -31,7 +44,7 @@ export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "gpt-4o",
+      model: "gpt-4",
     });
 
     const response = completion.choices[0]?.message?.content;

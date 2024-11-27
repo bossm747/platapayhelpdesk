@@ -12,12 +12,24 @@ const openai = new OpenAI({
 })
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { message, chatId, customerName } = await req.json()
+    
+    if (!message || !chatId || !customerName) {
+      console.error('Missing required fields:', { message, chatId, customerName });
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
     // System prompt to guide the AI's behavior
     const systemPrompt = `You are a helpful customer service agent for PlataPay, a multi-sided financial platform for seamless payment transactions.
@@ -26,6 +38,7 @@ serve(async (req) => {
     Current customer name: ${customerName}`
 
     try {
+      console.log('Attempting Anthropic response...');
       // Try Anthropic first
       const response = await anthropic.messages.create({
         model: 'claude-3-sonnet-20240229',
@@ -39,10 +52,13 @@ serve(async (req) => {
       const content = response.content[0].text
       const isFallback = content.startsWith('FALLBACK:')
 
+      console.log('Anthropic response successful:', { isFallback });
+
       return new Response(
         JSON.stringify({
           response: isFallback ? content.substring(9).trim() : content,
-          isFallback
+          isFallback,
+          provider: 'anthropic'
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -53,7 +69,7 @@ serve(async (req) => {
 
       // Fallback to OpenAI
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -69,6 +85,8 @@ serve(async (req) => {
       const content = completion.choices[0].message.content || ''
       const isFallback = content.startsWith('FALLBACK:')
 
+      console.log('OpenAI fallback successful:', { isFallback });
+
       return new Response(
         JSON.stringify({
           response: isFallback ? content.substring(9).trim() : content,
@@ -83,7 +101,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in chat function:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to process message' }),
+      JSON.stringify({ 
+        error: 'Failed to process message',
+        details: error.message 
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

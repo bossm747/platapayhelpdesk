@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Paperclip, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface ChatInputProps {
@@ -16,14 +15,17 @@ const ChatInput = ({ chatId, isSubmitting, onSubmit }: ChatInputProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
 
     try {
       await onSubmit(newMessage);
       setNewMessage("");
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error("Failed to send message");
+      toast.error("Failed to send message. Please try again.");
     }
   };
 
@@ -36,6 +38,7 @@ const ChatInput = ({ chatId, isSubmitting, onSubmit }: ChatInputProps) => {
         placeholder="Type your message..."
         value={newMessage}
         onChange={(e) => setNewMessage(e.target.value)}
+        disabled={isSubmitting}
       />
       <Button type="submit" disabled={isSubmitting}>
         <Send className="w-4 h-4" />
