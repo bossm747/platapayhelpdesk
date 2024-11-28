@@ -21,13 +21,12 @@ serve(async (req) => {
       apiKey: openAIApiKey,
     });
 
-    // Analyze ticket content for priority and category
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are an AI assistant that helps categorize and prioritize support tickets."
+          content: "You are an AI assistant that helps categorize and prioritize support tickets for PlataPay, a multi-sided financial platform."
         },
         {
           role: "user",
