@@ -10,6 +10,19 @@ app.use(express.json());
 
 dotenv.config();
 
+// Validate environment variables
+const requiredEnvVars = [
+  'VITE_OPENAI_API_KEY',
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY'
+];
+
+requiredEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    console.error(`Missing required environment variable: ${varName}`);
+  }
+});
+
 app.post('/api/save-env', async (req, res) => {
   try {
     const { key, provider } = req.body;
@@ -63,4 +76,9 @@ app.post('/api/save-env', async (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Environment variables loaded:', {
+    supabaseUrl: process.env.VITE_SUPABASE_URL ? '✓' : '✗',
+    supabaseKey: process.env.VITE_SUPABASE_ANON_KEY ? '✓' : '✗',
+    openAiKey: process.env.VITE_OPENAI_API_KEY ? '✓' : '✗'
+  });
 });
