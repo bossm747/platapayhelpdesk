@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import OpenAI from 'openai';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AIAnalysisResult {
   title?: string;
@@ -11,26 +10,15 @@ interface AIAnalysisResult {
 
 export async function analyzeFileContent(file: File): Promise<AIAnalysisResult> {
   try {
-    // First get the API key from Supabase
-    const { data: apiKeyData, error: apiKeyError } = await supabase
-      .from('api_keys')
-      .select('key')
-      .eq('provider', 'OPENAI_API_KEY')
-      .single();
+    const openAIApiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
-    if (apiKeyError) {
-      console.error('Error fetching API key:', apiKeyError);
-      toast.error('Failed to fetch OpenAI API key. Please ensure you are logged in and have configured the API key.');
-      throw new Error('Failed to fetch OpenAI API key');
-    }
-
-    if (!apiKeyData?.key) {
-      toast.error('OpenAI API key not configured');
+    if (!openAIApiKey) {
+      toast.error('OpenAI API key not configured in environment');
       throw new Error('OpenAI API key not configured');
     }
 
     const openai = new OpenAI({
-      apiKey: apiKeyData.key,
+      apiKey: openAIApiKey,
       dangerouslyAllowBrowser: true
     });
 

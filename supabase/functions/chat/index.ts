@@ -1,24 +1,30 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.32.1'
-import OpenAI from 'https://esm.sh/openai@4.20.1'
-import { corsHeaders } from '../_shared/cors.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.32.1";
+import OpenAI from "https://esm.sh/openai@4.20.1";
+
+const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const anthropic = new Anthropic({
-  apiKey: Deno.env.get('ANTHROPIC_API_KEY'),
-})
+  apiKey: anthropicApiKey,
+});
 
 const openai = new OpenAI({
-  apiKey: Deno.env.get('OPENAI_API_KEY'),
-})
+  apiKey: openAIApiKey,
+});
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, chatId, customerName } = await req.json()
+    const { message, chatId, customerName } = await req.json();
     
     if (!message || !chatId || !customerName) {
       console.error('Missing required fields:', { message, chatId, customerName });
@@ -28,18 +34,16 @@ serve(async (req) => {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
-      )
+      );
     }
 
-    // System prompt to guide the AI's behavior
     const systemPrompt = `You are a helpful customer service agent for PlataPay, a multi-sided financial platform for seamless payment transactions.
     Your goal is to assist users with their queries about payments, transactions, and platform features.
     If you cannot help or the query requires human intervention, respond with "FALLBACK:" followed by the reason.
-    Current customer name: ${customerName}`
+    Current customer name: ${customerName}`;
 
     try {
       console.log('Attempting Anthropic response...');
-      // Try Anthropic first
       const response = await anthropic.messages.create({
         model: 'claude-3-sonnet-20240229',
         max_tokens: 1000,
@@ -47,10 +51,10 @@ serve(async (req) => {
           role: 'user',
           content: `${systemPrompt}\n\nUser message: ${message}`
         }],
-      })
+      });
 
-      const content = response.content[0].text
-      const isFallback = content.startsWith('FALLBACK:')
+      const content = response.content[0].text;
+      const isFallback = content.startsWith('FALLBACK:');
 
       console.log('Anthropic response successful:', { isFallback });
 
@@ -63,11 +67,10 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         },
-      )
+      );
     } catch (anthropicError) {
-      console.error('Anthropic error, falling back to OpenAI:', anthropicError)
+      console.error('Anthropic error, falling back to OpenAI:', anthropicError);
 
-      // Fallback to OpenAI
       const completion = await openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -80,10 +83,10 @@ serve(async (req) => {
             content: message,
           },
         ],
-      })
+      });
 
-      const content = completion.choices[0].message.content || ''
-      const isFallback = content.startsWith('FALLBACK:')
+      const content = completion.choices[0].message.content || '';
+      const isFallback = content.startsWith('FALLBACK:');
 
       console.log('OpenAI fallback successful:', { isFallback });
 
@@ -96,10 +99,10 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         },
-      )
+      );
     }
   } catch (error) {
-    console.error('Error in chat function:', error)
+    console.error('Error in chat function:', error);
     return new Response(
       JSON.stringify({ 
         error: 'Failed to process message',
@@ -109,6 +112,6 @@ serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
-    )
+    );
   }
-})
+});
