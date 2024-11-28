@@ -25,11 +25,17 @@ export const supabase = createClient<Database>(
 );
 
 // Verify connection with proper Promise typing
-supabase.from('chats').select('count', { count: 'exact', head: true })
-  .then((result) => {
-    if (result.error) throw result.error;
+const verifyConnection = async () => {
+  try {
+    const { error } = await supabase
+      .from('chats')
+      .select('*', { count: 'exact', head: true });
+    
+    if (error) throw error;
     console.log('✓ Supabase connection verified');
-  })
-  .catch((error: Error) => {
-    console.error('× Supabase connection failed:', error.message);
-  });
+  } catch (error) {
+    console.error('× Supabase connection failed:', error instanceof Error ? error.message : String(error));
+  }
+};
+
+verifyConnection();
