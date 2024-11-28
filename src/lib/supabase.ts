@@ -11,9 +11,21 @@ export async function saveArticle(article: {
   tags?: string[];
 }) {
   try {
+    // First analyze the article content
+    const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-article', {
+      body: { content: article.content }
+    });
+
+    if (analysisError) {
+      console.error('Error analyzing article:', analysisError);
+    }
+
     const { data, error } = await supabase
       .from('articles')
-      .insert([article])
+      .insert([{
+        ...article,
+        tags: analysisData?.analysis?.tags || article.tags
+      }])
       .select()
       .single();
 
@@ -59,20 +71,9 @@ export async function saveApiKey(provider: string, key: string) {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('api_keys')
-      .upsert(
-        {
-          provider: provider.toUpperCase(),
-          key,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'provider'
-        }
-      )
-      .select()
-      .single();
+    const { data, error } = await supabase.functions.invoke('save-api-key', {
+      body: { provider, key }
+    });
 
     if (error) {
       toast.error('Failed to save API key');
@@ -110,5 +111,24 @@ export async function getApiKey(provider: string) {
   } catch (error) {
     console.error('Error getting API key:', error);
     return null;
+  }
+}
+
+// Helper functions for ticket processing
+export async function processTicket(ticketData: any) {
+  try {
+    const { data, error } = await supabase.functions.invoke('process-ticket', {
+      body: { ticket: ticketData }
+    });
+
+    if (error) {
+      toast.error('Failed to process ticket');
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error processing ticket:', error);
+    throw error;
   }
 }
