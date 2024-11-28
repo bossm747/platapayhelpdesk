@@ -20,17 +20,16 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true
-    },
-    global: {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
     }
   }
 );
 
-// Verify connection
+// Verify connection with proper Promise typing
 supabase.from('chats').select('count', { count: 'exact', head: true })
-  .then(() => console.log('✓ Supabase connection verified'))
-  .catch(err => console.error('× Supabase connection failed:', err.message));
+  .then((result) => {
+    if (result.error) throw result.error;
+    console.log('✓ Supabase connection verified');
+  })
+  .catch((error: Error) => {
+    console.error('× Supabase connection failed:', error.message);
+  });
