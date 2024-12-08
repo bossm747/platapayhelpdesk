@@ -4,6 +4,7 @@ import type { Database } from './types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase environment variables:', {
     url: !!supabaseUrl,
@@ -24,7 +25,7 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Verify connection with proper Promise typing
+// Verify connection
 const verifyConnection = async () => {
   try {
     const { error } = await supabase
