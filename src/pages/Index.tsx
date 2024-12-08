@@ -1,36 +1,49 @@
 import Layout from "@/components/layout/Layout";
-import StatCard from "@/components/dashboard/StatCard";
-import { Ticket, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import RoleSelector from "@/components/RoleSelector";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const Index = () => {
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Open Tickets"
-            value="42"
-            description="12 high priority"
-            icon={Ticket}
-          />
-          <StatCard
-            title="Average Response Time"
-            value="2.5h"
-            description="Last 24 hours"
-            icon={Clock}
-          />
-          <StatCard
-            title="Resolved Today"
-            value="28"
-            description="+8 from yesterday"
-            icon={CheckCircle2}
-          />
-          <StatCard
-            title="Critical Issues"
-            value="3"
-            description="Needs attention"
-            icon={AlertCircle}
-          />
+      <div className="max-w-5xl mx-auto space-y-12">
+        {/* Hero Section */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">Welcome to PlataPay Support</h1>
+          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
+            Get the help you need with our comprehensive support system. Choose your role below to get started.
+          </p>
+        </div>
+
+        {/* Role Selection */}
+        <RoleSelector />
+
+        {/* Quick Links */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Button
+            variant="outline"
+            className="justify-between"
+            onClick={() => window.open('https://platapay.com', '_blank')}
+          >
+            Visit PlataPay Website
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-between"
+            onClick={() => window.open('https://docs.platapay.com', '_blank')}
+          >
+            Developer Documentation
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-between lg:col-span-1 md:col-span-2"
+            onClick={() => window.open('https://status.platapay.com', '_blank')}
+          >
+            System Status
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </div>
     </Layout>
