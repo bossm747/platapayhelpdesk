@@ -3,8 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
+import { useSession } from '@supabase/auth-helpers-react';
 
 // Dashboard & Analytics
 import Index from "./pages/Index";
@@ -31,6 +32,17 @@ import Automation from "./pages/settings/automation";
 import Integration from "./pages/settings/integration";
 import Profile from "./pages/settings/profile";
 
+// Auth Components
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const session = useSession();
+  
+  if (!session) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -49,30 +61,52 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Dashboard & Analytics */}
+              {/* Public Routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/analytics" element={<Analytics />} />
-              
-              {/* Ticket Management */}
-              <Route path="/tickets" element={<Tickets />} />
-              <Route path="/tickets/new" element={<NewTicket />} />
-              <Route path="/tickets/:id" element={<TicketDetails />} />
-              
-              {/* Knowledge Base */}
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
-              <Route path="/knowledge-base/new" element={<NewArticle />} />
               <Route path="/knowledge-base/:id" element={<Article />} />
               
-              {/* Customer Support */}
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/chat/:id" element={<ChatRoom />} />
+              {/* Protected Routes */}
+              <Route path="/analytics" element={
+                <ProtectedRoute><Analytics /></ProtectedRoute>
+              } />
               
-              {/* Settings & Administration */}
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/settings/team" element={<Team />} />
-              <Route path="/settings/automation" element={<Automation />} />
-              <Route path="/settings/integration" element={<Integration />} />
-              <Route path="/settings/profile" element={<Profile />} />
+              <Route path="/tickets" element={
+                <ProtectedRoute><Tickets /></ProtectedRoute>
+              } />
+              <Route path="/tickets/new" element={
+                <ProtectedRoute><NewTicket /></ProtectedRoute>
+              } />
+              <Route path="/tickets/:id" element={
+                <ProtectedRoute><TicketDetails /></ProtectedRoute>
+              } />
+              
+              <Route path="/knowledge-base/new" element={
+                <ProtectedRoute><NewArticle /></ProtectedRoute>
+              } />
+              
+              <Route path="/chat" element={
+                <ProtectedRoute><Chat /></ProtectedRoute>
+              } />
+              <Route path="/chat/:id" element={
+                <ProtectedRoute><ChatRoom /></ProtectedRoute>
+              } />
+              
+              <Route path="/settings" element={
+                <ProtectedRoute><Settings /></ProtectedRoute>
+              } />
+              <Route path="/settings/team" element={
+                <ProtectedRoute><Team /></ProtectedRoute>
+              } />
+              <Route path="/settings/automation" element={
+                <ProtectedRoute><Automation /></ProtectedRoute>
+              } />
+              <Route path="/settings/integration" element={
+                <ProtectedRoute><Integration /></ProtectedRoute>
+              } />
+              <Route path="/settings/profile" element={
+                <ProtectedRoute><Profile /></ProtectedRoute>
+              } />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
