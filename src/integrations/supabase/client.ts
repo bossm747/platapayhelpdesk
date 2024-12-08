@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
 
 // Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
@@ -13,6 +14,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing required Supabase environment variables');
 }
 
+// Create Supabase client with explicit typing
 export const supabase = createClient<Database>(
   supabaseUrl,
   supabaseKey,
@@ -29,13 +31,17 @@ export const supabase = createClient<Database>(
 const verifyConnection = async () => {
   try {
     const { error } = await supabase
-      .from('chats')
+      .from('articles')
       .select('*', { count: 'exact', head: true });
     
     if (error) throw error;
     console.log('✓ Supabase connection verified');
+    console.log('URL:', supabaseUrl);
+    console.log('Key length:', supabaseKey.length);
   } catch (error) {
     console.error('× Supabase connection failed:', error instanceof Error ? error.message : String(error));
+    console.error('URL:', supabaseUrl);
+    console.error('Key length:', supabaseKey.length);
   }
 };
 
