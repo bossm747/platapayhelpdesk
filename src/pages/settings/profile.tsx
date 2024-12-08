@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,25 +14,126 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Bell, Moon, Globe, Shield, User } from "lucide-react";
+import { Bell, Moon, Globe, Shield, User, Image } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  notifications_email: boolean;
+  notifications_push: boolean;
+  notifications_updates: boolean;
+  theme: string;
+  language: string;
+}
 
 const ProfileSettings = () => {
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    updates: false,
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  // Fetch profile data
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data as Profile;
+    },
   });
 
-  const handleSave = () => {
-    toast.success("Settings saved successfully");
+  // Update profile mutation
+  const updateProfile = useMutation({
+    mutationFn: async (updates: Partial<Profile>) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast.success("Profile updated successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to update profile");
+      console.error('Error updating profile:', error);
+    },
+  });
+
+  // Handle avatar upload
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      setIsUploading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${session.user.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      await updateProfile.mutateAsync({ avatar_url: publicUrl });
+      toast.success("Avatar updated successfully");
+    } catch (error) {
+      toast.error("Failed to upload avatar");
+      console.error('Error uploading avatar:', error);
+    } finally {
+      setIsUploading(false);
+      setAvatarFile(null);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Profile & Preferences</h1>
-          <Button onClick={handleSave}>Save Changes</Button>
         </div>
 
         <Card className="bg-zinc-900 border-zinc-800">
@@ -42,15 +144,48 @@ const ProfileSettings = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20">
+                <img
+                  src={profile?.avatar_url || '/placeholder.svg'}
+                  alt="Avatar"
+                  className="w-full h-full rounded-full object-cover"
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 p-1 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                >
+                  <Image className="w-4 h-4" />
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setAvatarFile(file);
+                        handleAvatarUpload(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="flex-1 space-y-2">
                 <Label>Full Name</Label>
-                <Input defaultValue="Support Agent" />
+                <Input
+                  defaultValue={profile?.full_name || ''}
+                  onChange={(e) => updateProfile.mutate({ full_name: e.target.value })}
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input defaultValue="agent@company.com" type="email" />
-              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                defaultValue={profile?.email || ''}
+                type="email"
+                onChange={(e) => updateProfile.mutate({ email: e.target.value })}
+              />
             </div>
           </CardContent>
         </Card>
@@ -69,9 +204,9 @@ const ProfileSettings = () => {
                 <p className="text-sm text-zinc-400">Receive updates via email</p>
               </div>
               <Switch
-                checked={notifications.email}
+                checked={profile?.notifications_email}
                 onCheckedChange={(checked) =>
-                  setNotifications({ ...notifications, email: checked })
+                  updateProfile.mutate({ notifications_email: checked })
                 }
               />
             </div>
@@ -83,9 +218,9 @@ const ProfileSettings = () => {
                 </p>
               </div>
               <Switch
-                checked={notifications.push}
+                checked={profile?.notifications_push}
                 onCheckedChange={(checked) =>
-                  setNotifications({ ...notifications, push: checked })
+                  updateProfile.mutate({ notifications_push: checked })
                 }
               />
             </div>
@@ -97,31 +232,11 @@ const ProfileSettings = () => {
                 </p>
               </div>
               <Switch
-                checked={notifications.updates}
+                checked={profile?.notifications_updates}
                 onCheckedChange={(checked) =>
-                  setNotifications({ ...notifications, updates: checked })
+                  updateProfile.mutate({ notifications_updates: checked })
                 }
               />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Moon className="w-5 h-5" />
-              Appearance
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Dark Mode</Label>
-                <p className="text-sm text-zinc-400">
-                  Toggle between light and dark themes
-                </p>
-              </div>
-              <Switch defaultChecked />
             </div>
           </CardContent>
         </Card>
@@ -136,7 +251,10 @@ const ProfileSettings = () => {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Language</Label>
-              <Select defaultValue="en">
+              <Select
+                value={profile?.language}
+                onValueChange={(value) => updateProfile.mutate({ language: value })}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -158,20 +276,19 @@ const ProfileSettings = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <Input type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label>New Password</Label>
-              <Input type="password" />
-            </div>
-            <div className="space-y-2">
-              <Label>Confirm New Password</Label>
-              <Input type="password" />
-            </div>
-            <Button variant="outline" className="w-full">
-              Change Password
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                  toast.error("Failed to sign out");
+                } else {
+                  navigate("/login");
+                }
+              }}
+            >
+              Sign Out
             </Button>
           </CardContent>
         </Card>
