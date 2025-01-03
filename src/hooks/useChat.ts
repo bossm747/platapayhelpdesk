@@ -26,34 +26,38 @@ export const useChat = (chatId: string | undefined) => {
     if (!chatId) return;
 
     const fetchChat = async () => {
-      const { data: chatData, error: chatError } = await supabase
-        .from('chats')
-        .select('*')
-        .eq('id', chatId)
-        .single();
+      try {
+        const { data: chatData, error: chatError } = await supabase
+          .from('chats')
+          .select('*')
+          .eq('id', chatId)
+          .single();
 
-      if (chatError) {
+        if (chatError) throw chatError;
+
+        setChat(chatData);
+      } catch (error) {
+        console.error('Error fetching chat details:', error);
         toast.error('Error fetching chat details');
-        return;
       }
-
-      setChat(chatData);
     };
 
     const fetchMessages = async () => {
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
+      try {
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('chat_id', chatId)
+          .order('created_at', { ascending: true });
 
-      if (messagesError) {
+        if (messagesError) throw messagesError;
+
+        setMessages(messagesData || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
         toast.error('Error fetching messages');
-        return;
       }
-
-      setMessages(messagesData || []);
-      setIsLoading(false);
     };
 
     fetchChat();
