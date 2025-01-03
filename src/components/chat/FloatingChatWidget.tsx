@@ -7,61 +7,65 @@ import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Mutex } from 'async-mutex';
 
 const FloatingChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const mutex = new Mutex();
 
   const initializeChat = async () => {
-    try {
-      // Create a new chat session
-      const { data: chatData, error: chatError } = await supabase
-        .from('chats')
-        .insert({
-          customer_name: 'Guest User',
-          customer_email: 'guest@example.com',
-          status: 'active'
-        })
-        .select()
-        .single();
+    await mutex.runExclusive(async () => {
+      try {
+        // Create a new chat session
+        const { data: chatData, error: chatError } = await supabase
+          .from('chats')
+          .insert({
+            customer_name: 'Guest User',
+            customer_email: 'guest@example.com',
+            status: 'active'
+          })
+          .select()
+          .single();
 
-      if (chatError) throw chatError;
+        if (chatError) throw chatError;
 
-      setChatId(chatData.id);
+        setChatId(chatData.id);
 
-      // Add initial bot message
-      const { error: messageError } = await supabase
-        .from('messages')
-        .insert({
-          chat_id: chatData.id,
-          content: "Hello! I'm your AI assistant. How can I help you today?",
-          sender_type: 'bot'
-        });
+        // Add initial bot message
+        const { error: messageError } = await supabase
+          .from('messages')
+          .insert({
+            chat_id: chatData.id,
+            content: "Hello! I'm your AI assistant. How can I help you today?",
+            sender_type: 'bot'
+          });
 
-      if (messageError) throw messageError;
+        if (messageError) throw messageError;
 
-      // Subscribe to new messages
-      const subscription = supabase
-        .channel(`chat:${chatData.id}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatData.id}`,
-        }, payload => {
-          setMessages(current => [...current, payload.new]);
-        })
-        .subscribe();
+        // Subscribe to new messages
+        const subscription = supabase
+          .channel(`chat:${chatData.id}`)
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `chat_id=eq.${chatData.id}`,
+          }, payload => {
+            setMessages(current => [...current, payload.new]);
+          })
+          .subscribe();
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    } catch (error) {
-      console.error('Error initializing chat:', error);
-      toast.error('Failed to start chat session');
-    }
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+        toast.error('Failed to start chat session');
+      }
+    });
   };
 
   const handleSubmit = async (message: string) => {

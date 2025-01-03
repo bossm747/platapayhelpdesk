@@ -14,10 +14,15 @@ const Integration = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in to access this page");
-        navigate("/login");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast.error("Please log in to access this page");
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        toast.error('Failed to check authentication');
       }
     };
     

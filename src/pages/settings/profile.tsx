@@ -39,9 +39,15 @@ const ProfileSettings = () => {
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login");
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!session) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        toast.error('Failed to check authentication');
       }
     };
     checkAuth();
@@ -51,32 +57,46 @@ const ProfileSettings = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!session) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) throw error;
-      return data as Profile;
+        if (profileError) throw profileError;
+        return data as Profile;
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        toast.error('Failed to fetch profile data');
+        throw error;
+      }
     },
   });
 
   // Update profile mutation
   const updateProfile = useMutation({
     mutationFn: async (updates: Partial<Profile>) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!session) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', session.user.id);
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update(updates)
+          .eq('id', session.user.id);
 
-      if (error) throw error;
+        if (updateError) throw updateError;
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to update profile');
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -92,7 +112,8 @@ const ProfileSettings = () => {
   const handleAvatarUpload = async (file: File) => {
     try {
       setIsUploading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
       if (!session) throw new Error('Not authenticated');
 
       const fileExt = file.name.split('.').pop();
@@ -104,9 +125,11 @@ const ProfileSettings = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl }, error: urlError } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
+
+      if (urlError) throw urlError;
 
       await updateProfile.mutateAsync({ avatar_url: publicUrl });
       toast.success("Avatar updated successfully");
@@ -280,11 +303,13 @@ const ProfileSettings = () => {
               variant="outline"
               className="w-full"
               onClick={async () => {
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                  toast.error("Failed to sign out");
-                } else {
+                try {
+                  const { error } = await supabase.auth.signOut();
+                  if (error) throw error;
                   navigate("/login");
+                } catch (error) {
+                  console.error('Error signing out:', error);
+                  toast.error("Failed to sign out");
                 }
               }}
             >
