@@ -100,3 +100,10 @@
 .dropdown-menu {
   @apply bg-zinc-900/80 backdrop-blur-sm;
 }
+
+/* P1f90 */
+@media (max-width: 768px) {
+  main {
+    padding-top: 4rem;
+  }
+}

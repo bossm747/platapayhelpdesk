@@ -25,7 +25,7 @@ const Layout = ({ children, className }: LayoutProps) => {
       <Navbar onMenuClick={handleMenuClick} />
       <div className="flex h-[calc(100vh-4rem)]">
         <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-        <main className={cn("flex-1 overflow-y-auto p-8", className)}>
+        <main className={cn("flex-1 overflow-y-auto p-8 pt-16", className)}>
           {children}
         </main>
       </div>
