@@ -5,7 +5,12 @@ import type { Database } from './types';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables:', {
+    url: !!supabaseUrl,
+    key: !!supabaseKey
+  });
   throw new Error('Missing Supabase environment variables');
 }
 
@@ -29,10 +34,14 @@ const verifyConnection = async () => {
       .from('articles')
       .select('count', { count: 'exact', head: true });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase connection error:', error);
+      throw error;
+    }
     console.log('✓ Supabase connection verified');
   } catch (error) {
     console.error('× Supabase connection failed:', error);
+    throw error;
   }
 };
 
