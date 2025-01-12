@@ -16,9 +16,11 @@ const KnowledgeBasePage = () => {
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['articles'],
     queryFn: getArticles,
-    onError: (error) => {
-      console.error('Error fetching articles:', error);
-      toast.error('Failed to load articles');
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching articles:', error);
+        toast.error('Failed to load articles');
+      }
     }
   });
 
