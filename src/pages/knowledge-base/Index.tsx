@@ -8,13 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus, Book } from "lucide-react";
 import { getArticles } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const KnowledgeBasePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: articles, isLoading } = useQuery({
+  const { data: articles, isLoading, error } = useQuery({
     queryKey: ['articles'],
     queryFn: getArticles,
+    onError: (error) => {
+      console.error('Error fetching articles:', error);
+      toast.error('Failed to load articles');
+    }
   });
 
   const filteredArticles = articles?.filter(
@@ -46,6 +51,14 @@ const KnowledgeBasePage = () => {
           />
         </div>
 
+        {error && (
+          <Card className="bg-red-500/10 border-red-500/20">
+            <CardContent className="pt-6">
+              <p className="text-red-500">Failed to load articles. Please try again later.</p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
@@ -70,7 +83,9 @@ const KnowledgeBasePage = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-zinc-400 mb-2">{article.content.substring(0, 100)}...</p>
+                    <p className="text-sm text-zinc-400 mb-2">
+                      {article.content.substring(0, 100)}...
+                    </p>
                     <div className="flex items-center justify-between text-sm text-zinc-500">
                       <span>{article.category}</span>
                       <span>{article.views || 0} views</span>

@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 
 export { supabase };
 
-// Helper functions for knowledge base
 export async function saveArticle(article: {
   title: string;
   content: string;
@@ -11,7 +10,6 @@ export async function saveArticle(article: {
   tags?: string[];
 }) {
   try {
-    // First analyze the article content
     const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-article', {
       body: { content: article.content }
     });
@@ -50,7 +48,7 @@ export async function getArticles() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      toast.error('Failed to fetch articles');
+      console.error('Error fetching articles:', error);
       throw error;
     }
     
@@ -61,7 +59,6 @@ export async function getArticles() {
   }
 }
 
-// Helper functions for API keys
 export async function saveApiKey(provider: string, key: string) {
   const { data: session } = await supabase.auth.getSession();
   
@@ -114,7 +111,6 @@ export async function getApiKey(provider: string) {
   }
 }
 
-// Helper functions for ticket processing
 export async function processTicket(ticketData: any) {
   try {
     const { data, error } = await supabase.functions.invoke('process-ticket', {
