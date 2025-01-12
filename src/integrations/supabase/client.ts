@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { toast } from 'sonner';
 
 // Get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -7,11 +8,13 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables:', {
+  const error = 'Missing Supabase environment variables';
+  console.error(error, {
     url: !!supabaseUrl,
     key: !!supabaseKey
   });
-  throw new Error('Missing Supabase environment variables');
+  toast.error(error);
+  throw new Error(error);
 }
 
 // Create Supabase client
@@ -30,19 +33,22 @@ export const supabase = createClient<Database>(
 // Verify connection
 const verifyConnection = async () => {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('articles')
       .select('count', { count: 'exact', head: true });
     
     if (error) {
       console.error('Supabase connection error:', error);
+      toast.error('Failed to connect to database');
       throw error;
     }
     console.log('✓ Supabase connection verified');
   } catch (error) {
     console.error('× Supabase connection failed:', error);
+    toast.error('Database connection failed');
     throw error;
   }
 };
 
-verifyConnection();
+// Initialize connection verification
+verifyConnection().catch(console.error);
