@@ -125,13 +125,11 @@ const ProfileSettings = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl }, error: urlError } = supabase.storage
+      const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      if (urlError) throw urlError;
-
-      await updateProfile.mutateAsync({ avatar_url: publicUrl });
+      await updateProfile.mutateAsync({ avatar_url: data.publicUrl });
       toast.success("Avatar updated successfully");
     } catch (error) {
       toast.error("Failed to upload avatar");
