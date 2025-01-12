@@ -1,142 +1,89 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { Bell, Moon, Globe, Shield, User, Image } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Loader2, Upload } from "lucide-react";
+import type { Profile } from "@/types/profile";
 
-interface Profile {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  avatar_url: string | null;
-  notifications_email: boolean;
-  notifications_push: boolean;
-  notifications_updates: boolean;
-  theme: string;
-  language: string;
-}
-
-const ProfileSettings = () => {
-  const navigate = useNavigate();
+const ProfilePage = () => {
+  const session = useSession();
   const queryClient = useQueryClient();
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Check authentication
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!session) {
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error('Error checking authentication:', error);
-        toast.error('Failed to check authentication');
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
-  // Fetch profile data
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ["profile"],
     queryFn: async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!session) throw new Error('Not authenticated');
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session?.user?.id)
+        .single();
 
-        const { data, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) throw profileError;
-        return data as Profile;
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-        toast.error('Failed to fetch profile data');
-        throw error;
-      }
+      if (error) throw error;
+      return data as Profile;
     },
+    enabled: !!session?.user?.id,
   });
 
-  // Update profile mutation
   const updateProfile = useMutation({
     mutationFn: async (updates: Partial<Profile>) => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!session) throw new Error('Not authenticated');
+      const { error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", session?.user?.id);
 
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update(updates)
-          .eq('id', session.user.id);
-
-        if (updateError) throw updateError;
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        toast.error('Failed to update profile');
-        throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast.success("Profile updated successfully");
-    },
-    onError: (error) => {
-      toast.error("Failed to update profile");
-      console.error('Error updating profile:', error);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 
-  // Handle avatar upload
-  const handleAvatarUpload = async (file: File) => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      setIsUploading(true);
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      if (!session) throw new Error('Not authenticated');
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${session.user.id}-${Math.random()}.${fileExt}`;
+      setIsUploading(true);
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${session?.user?.id}-${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from("avatars")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from('avatars')
+      const { data } = await supabase.storage
+        .from("avatars")
         .getPublicUrl(filePath);
 
       await updateProfile.mutateAsync({ avatar_url: data.publicUrl });
       toast.success("Avatar updated successfully");
     } catch (error) {
       toast.error("Failed to upload avatar");
-      console.error('Error uploading avatar:', error);
+      console.error("Error uploading avatar:", error);
     } finally {
       setIsUploading(false);
-      setAvatarFile(null);
+    }
+  };
+
+  const handleNotificationToggle = async (key: keyof Profile) => {
+    try {
+      await updateProfile.mutateAsync({
+        [key]: !profile?.[key],
+      });
+      toast.success("Preferences updated");
+    } catch (error) {
+      toast.error("Failed to update preferences");
     }
   };
 
@@ -144,7 +91,7 @@ const ProfileSettings = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <Loader2 className="w-6 h-6 animate-spin" />
         </div>
       </Layout>
     );
@@ -153,166 +100,76 @@ const ProfileSettings = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Profile & Preferences</h1>
-        </div>
+        <h1 className="text-2xl font-bold">Profile Settings</h1>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Personal Information
-            </CardTitle>
+            <CardTitle>Avatar</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20">
-                <img
-                  src={profile?.avatar_url || '/placeholder.svg'}
-                  alt="Avatar"
-                  className="w-full h-full rounded-full object-cover"
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-1 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={profile?.avatar_url || ""} />
+                <AvatarFallback>
+                  {profile?.full_name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <Button
+                  variant="outline"
+                  className="relative"
+                  disabled={isUploading}
                 >
-                  <Image className="w-4 h-4" />
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </>
+                  )}
                   <input
-                    id="avatar-upload"
                     type="file"
-                    className="hidden"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
                     accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setAvatarFile(file);
-                        handleAvatarUpload(file);
-                      }
-                    }}
+                    onChange={handleAvatarUpload}
+                    disabled={isUploading}
                   />
-                </label>
+                </Button>
               </div>
-              <div className="flex-1 space-y-2">
-                <Label>Full Name</Label>
-                <Input
-                  defaultValue={profile?.full_name || ''}
-                  onChange={(e) => updateProfile.mutate({ full_name: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input
-                defaultValue={profile?.email || ''}
-                type="email"
-                onChange={(e) => updateProfile.mutate({ email: e.target.value })}
-              />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Notification Preferences
-            </CardTitle>
+            <CardTitle>Notification Preferences</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-zinc-400">Receive updates via email</p>
-              </div>
+              <Label htmlFor="notifications_email">Email Notifications</Label>
               <Switch
+                id="notifications_email"
                 checked={profile?.notifications_email}
-                onCheckedChange={(checked) =>
-                  updateProfile.mutate({ notifications_email: checked })
-                }
+                onCheckedChange={() => handleNotificationToggle("notifications_email")}
               />
             </div>
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Push Notifications</Label>
-                <p className="text-sm text-zinc-400">
-                  Receive desktop notifications
-                </p>
-              </div>
+              <Label htmlFor="notifications_push">Push Notifications</Label>
               <Switch
+                id="notifications_push"
                 checked={profile?.notifications_push}
-                onCheckedChange={(checked) =>
-                  updateProfile.mutate({ notifications_push: checked })
-                }
+                onCheckedChange={() => handleNotificationToggle("notifications_push")}
               />
             </div>
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Product Updates</Label>
-                <p className="text-sm text-zinc-400">
-                  Receive updates about new features
-                </p>
-              </div>
+              <Label htmlFor="notifications_updates">Product Updates</Label>
               <Switch
+                id="notifications_updates"
                 checked={profile?.notifications_updates}
-                onCheckedChange={(checked) =>
-                  updateProfile.mutate({ notifications_updates: checked })
-                }
+                onCheckedChange={() => handleNotificationToggle("notifications_updates")}
               />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5" />
-              Language & Region
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Language</Label>
-              <Select
-                value={profile?.language}
-                onValueChange={(value) => updateProfile.mutate({ language: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Security
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                try {
-                  const { error } = await supabase.auth.signOut();
-                  if (error) throw error;
-                  navigate("/login");
-                } catch (error) {
-                  console.error('Error signing out:', error);
-                  toast.error("Failed to sign out");
-                }
-              }}
-            >
-              Sign Out
-            </Button>
           </CardContent>
         </Card>
       </div>
@@ -320,4 +177,4 @@ const ProfileSettings = () => {
   );
 };
 
-export default ProfileSettings;
+export default ProfilePage;
