@@ -10,6 +10,9 @@ app.use(express.json());
 
 dotenv.config();
 
+const SUPABASE_URL = "https://dqnzvtcguhpkrsgxogax.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbnp2dGNndWhwa3JzZ3hvZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4MjQxNzAsImV4cCI6MjAyNTQwMDE3MH0.qDTKLaXB-LnDEE8TH54zn-oWdp9u1hi_C8PHJ_dgBYs";
+
 app.post('/api/save-env', async (req, res) => {
   try {
     const { key, provider } = req.body;
@@ -39,12 +42,11 @@ app.post('/api/save-env', async (req, res) => {
 
     envMap.set(envVarName, key);
 
-    // Keep existing Supabase configuration
     if (!envMap.has('VITE_SUPABASE_URL')) {
-      envMap.set('VITE_SUPABASE_URL', process.env.VITE_SUPABASE_URL || '');
+      envMap.set('VITE_SUPABASE_URL', SUPABASE_URL);
     }
     if (!envMap.has('VITE_SUPABASE_ANON_KEY')) {
-      envMap.set('VITE_SUPABASE_ANON_KEY', process.env.VITE_SUPABASE_ANON_KEY || '');
+      envMap.set('VITE_SUPABASE_ANON_KEY', SUPABASE_ANON_KEY);
     }
 
     const newEnvContent = Array.from(envMap.entries())
