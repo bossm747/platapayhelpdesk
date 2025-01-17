@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import FloatingChatWidget from "../chat/FloatingChatWidget";
+import LiveChatWidget from "../support/LiveChatWidget";
 import { useState } from "react";
 
 interface LayoutProps {
@@ -29,7 +29,7 @@ const Layout = ({ children, className }: LayoutProps) => {
           {children}
         </main>
       </div>
-      <FloatingChatWidget />
+      <LiveChatWidget />
     </div>
   );
 };
