@@ -375,6 +375,12 @@ export type Database = {
         }
         Returns: unknown
       }
+      increment_views: {
+        Args: {
+          row_id: string
+        }
+        Returns: undefined
+      }
       ivfflat_bit_support: {
         Args: {
           "": unknown

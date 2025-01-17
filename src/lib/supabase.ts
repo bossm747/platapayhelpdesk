@@ -64,16 +64,15 @@ export async function getArticles() {
 
 export async function updateArticleViews(articleId: string) {
   try {
-    const { error } = await supabase
-      .from('articles')
-      .update({ views: supabase.rpc('increment_views', { row_id: articleId }) })
-      .eq('id', articleId);
+    const { error } = await supabase.rpc('increment_views', { row_id: articleId });
 
     if (error) {
       console.error('Error updating article views:', error);
+      throw error;
     }
   } catch (error) {
     console.error('Error updating article views:', error);
+    throw error;
   }
 }
 
