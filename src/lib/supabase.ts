@@ -35,22 +35,17 @@ export async function saveArticle(article: {
 }
 
 export async function getArticles() {
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching articles:', error);
-      throw error;
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error getting articles:', error);
+  if (error) {
+    console.error('Error fetching articles:', error);
     throw error;
   }
+  
+  return data || [];
 }
 
 export async function updateArticleViews(articleId: string) {
