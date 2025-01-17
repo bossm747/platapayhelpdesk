@@ -1,7 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getArticles } from "@/lib/supabase";
+import { queryWithRetry } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import HeroSection from "@/components/knowledge-base/HeroSection";
@@ -14,9 +14,17 @@ import QuickLinks from "@/components/knowledge-base/QuickLinks";
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: articles, isLoading, error } = useQuery({
+  const { data: articles = [], isLoading, error } = useQuery({
     queryKey: ['articles'],
-    queryFn: getArticles,
+    queryFn: async () => {
+      const { data, error } = await queryWithRetry(
+        'all-articles',
+        () => supabase.from('articles').select('*')
+      );
+      
+      if (error) throw error;
+      return data || [];
+    },
     meta: {
       onError: (error: Error) => {
         console.error('Error fetching articles:', error);
@@ -25,15 +33,20 @@ const Index = () => {
     }
   });
 
-  const filteredArticles = articles?.filter(article =>
+  const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     article.content.toLowerCase().includes(searchQuery.toLowerCase())
-  ) ?? [];
+  );
 
-  const popularArticles = articles?.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3) ?? [];
-  const recentArticles = articles?.sort((a, b) => 
-    new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
-  ).slice(0, 3) ?? [];
+  const popularArticles = [...articles]
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .slice(0, 3);
+
+  const recentArticles = [...articles]
+    .sort((a, b) => 
+      new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+    )
+    .slice(0, 3);
 
   return (
     <Layout>

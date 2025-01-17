@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing required configuration for Supabase');
 }
 
-// Create Supabase client
+// Create Supabase client with retries
 export const supabase = createClient<Database>(
   supabaseUrl,
   supabaseKey,
@@ -21,16 +21,72 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true
+    },
+    global: {
+      fetch: (...args) => {
+        return fetch(...args).catch(async (error) => {
+          console.error('Supabase fetch error:', error);
+          toast.error('Connection error, retrying...');
+          // Retry the request once
+          return fetch(...args);
+        });
+      }
     }
   }
 );
 
-// Verify connection
-const verifyConnection = async () => {
+// Cache for responses
+const responseCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Wrapper for Supabase queries with caching and error handling
+export async function queryWithRetry<T>(
+  queryKey: string,
+  queryFn: () => Promise<{ data: T | null; error: any }>,
+  options = { useCache: true }
+): Promise<{ data: T | null; error: any }> {
   try {
-    const { error } = await supabase
-      .from('articles')
-      .select('count', { count: 'exact', head: true });
+    // Check cache first
+    if (options.useCache) {
+      const cached = responseCache.get(queryKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        return { data: cached.data, error: null };
+      }
+    }
+
+    // Execute query
+    const result = await queryFn();
+
+    // Handle errors
+    if (result.error) {
+      console.error(`Query error for ${queryKey}:`, result.error);
+      throw result.error;
+    }
+
+    // Cache successful response
+    if (options.useCache && result.data) {
+      responseCache.set(queryKey, {
+        data: result.data,
+        timestamp: Date.now()
+      });
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error(`Failed to execute query ${queryKey}:`, error);
+    toast.error(error.message || 'An error occurred while fetching data');
+    return { data: null, error };
+  }
+}
+
+// Verify connection with better error handling
+export const verifyConnection = async () => {
+  try {
+    const { error } = await queryWithRetry(
+      'verify-connection',
+      () => supabase.from('articles').select('count', { count: 'exact', head: true }),
+      { useCache: false }
+    );
     
     if (error) {
       console.error('Supabase connection error:', error);
