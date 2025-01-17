@@ -1,17 +1,20 @@
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, ArrowRight, Book, Eye, Star, Calendar } from "lucide-react";
+import { Search, ArrowRight, Book, Eye, Star, Calendar, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleSearch from "@/components/knowledge-base/ArticleSearch";
+import RoleSelector from "@/components/RoleSelector";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getArticles } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useSession } from '@supabase/auth-helpers-react';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const session = useSession();
 
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['articles'],
@@ -43,7 +46,18 @@ const Index = () => {
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
             Get the help you need with our comprehensive support system. Find answers, tutorials, and guides to help you succeed with PlataPay.
           </p>
+          {session && (
+            <Link to="/knowledge-base/new">
+              <Button className="mt-4">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Article
+              </Button>
+            </Link>
+          )}
         </div>
+
+        {/* Role Selector */}
+        <RoleSelector />
 
         {/* Search Section */}
         <div className="max-w-2xl mx-auto">
