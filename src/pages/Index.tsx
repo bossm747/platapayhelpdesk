@@ -64,7 +64,7 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto space-y-12 animate-fade-in">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Hero Section with Search */}
         <HeroSection />
         
@@ -76,7 +76,10 @@ const Index = () => {
         />
 
         {/* Quick Links */}
-        <QuickLinks />
+        <div className="py-4">
+          <h2 className="text-2xl font-bold mb-6 text-center">Quick Access</h2>
+          <QuickLinks />
+        </div>
 
         {/* Categories Section */}
         <div className="space-y-6">
