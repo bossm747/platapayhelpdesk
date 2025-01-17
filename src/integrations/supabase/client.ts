@@ -23,12 +23,12 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true
     },
     global: {
-      fetch: (...args) => {
-        return fetch(...args).catch(async (error) => {
+      fetch: (url: RequestInfo | URL, options?: RequestInit) => {
+        return fetch(url, options).catch(async (error) => {
           console.error('Supabase fetch error:', error);
           toast.error('Connection error, retrying...');
           // Retry the request once
-          return fetch(...args);
+          return fetch(url, options);
         });
       }
     }

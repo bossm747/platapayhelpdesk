@@ -2,6 +2,7 @@ import Layout from "@/components/layout/Layout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryWithRetry } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import HeroSection from "@/components/knowledge-base/HeroSection";
@@ -11,13 +12,21 @@ import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleListSection from "@/components/knowledge-base/ArticleListSection";
 import QuickLinks from "@/components/knowledge-base/QuickLinks";
 
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  views: number;
+  created_at: string;
+}
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: articles = [], isLoading, error } = useQuery({
     queryKey: ['articles'],
     queryFn: async () => {
-      const { data, error } = await queryWithRetry(
+      const { data, error } = await queryWithRetry<Article[]>(
         'all-articles',
         () => supabase.from('articles').select('*')
       );
