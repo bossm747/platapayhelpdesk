@@ -16,8 +16,14 @@ interface Article {
   id: string;
   title: string;
   content: string;
+  category: string;
+  tags?: string[];
   views: number;
+  rating_sum: number;
+  rating_count: number;
   created_at: string;
+  updated_at: string;
+  last_updated: string;
 }
 
 const Index = () => {
