@@ -3,17 +3,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
+import { rateArticle } from "@/lib/supabase";
 
-const ArticleRating = () => {
+interface ArticleRatingProps {
+  articleId: string;
+}
+
+const ArticleRating = ({ articleId }: ArticleRatingProps) => {
   const [rated, setRated] = useState(false);
 
-  const handleRating = (helpful: boolean) => {
-    setRated(true);
-    toast.success(
-      helpful
-        ? "Thank you for your feedback!"
-        : "Thanks for letting us know. We'll work on improving this article."
-    );
+  const handleRating = async (helpful: boolean) => {
+    try {
+      await rateArticle(articleId, helpful ? 5 : 1);
+      setRated(true);
+      toast.success(
+        helpful
+          ? "Thank you for your feedback!"
+          : "Thanks for letting us know. We'll work on improving this article."
+      );
+    } catch (error) {
+      console.error('Error rating article:', error);
+      toast.error('Failed to submit rating. Please try again.');
+    }
   };
 
   if (rated) {
