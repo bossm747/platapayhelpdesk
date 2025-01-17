@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
   const missingVars = [];
   if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL');
@@ -16,10 +15,6 @@ if (!supabaseUrl || !supabaseKey) {
   toast.error('Database configuration error');
   throw new Error(errorMessage);
 }
-
-// Log the first and last 4 characters of the key for debugging
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key:', `${supabaseKey.slice(0, 4)}...${supabaseKey.slice(-4)}`);
 
 export const supabase = createClient<Database>(
   supabaseUrl,
