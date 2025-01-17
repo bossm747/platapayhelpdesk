@@ -66,7 +66,7 @@ export async function updateArticleViews(articleId: string) {
   try {
     const { error } = await supabase
       .from('articles')
-      .update({ views: supabase.rpc('increment', { value: 1 }) })
+      .update({ views: supabase.rpc('increment_views', { row_id: articleId }) })
       .eq('id', articleId);
 
     if (error) {
