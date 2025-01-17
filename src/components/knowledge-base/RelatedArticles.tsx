@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 
 interface RelatedArticle {
   id: string;
@@ -13,23 +13,27 @@ interface RelatedArticlesProps {
 }
 
 const RelatedArticles = ({ articles }: RelatedArticlesProps) => {
+  if (articles.length === 0) {
+    return null;
+  }
+
   return (
     <Card className="bg-zinc-900 border-zinc-800">
       <CardHeader>
         <CardTitle className="text-lg">Related Articles</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {articles.map((article) => (
             <Link
               key={article.id}
               to={`/knowledge-base/${article.id}`}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/50 transition-colors"
+              className="block p-3 -mx-3 rounded-lg hover:bg-zinc-800/50 transition-colors"
             >
-              <span className="text-sm">{article.title}</span>
-              <div className="flex items-center gap-2 text-zinc-400">
-                <span className="text-xs">{article.views} views</span>
-                <ChevronRight className="w-4 h-4" />
+              <h3 className="font-medium mb-2">{article.title}</h3>
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Eye className="w-4 h-4" />
+                <span>{article.views} views</span>
               </div>
             </Link>
           ))}

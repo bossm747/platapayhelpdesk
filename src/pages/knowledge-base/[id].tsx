@@ -1,15 +1,15 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, Calendar, Star } from "lucide-react";
-import { Link } from "react-router-dom";
 import ArticleRating from "@/components/knowledge-base/ArticleRating";
 import RelatedArticles from "@/components/knowledge-base/RelatedArticles";
 import { getArticles, updateArticleViews } from "@/lib/supabase";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Article = () => {
   const { id } = useParams();
@@ -46,9 +46,21 @@ const Article = () => {
   if (isLoading) {
     return (
       <Layout>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-zinc-800 rounded w-1/3"></div>
-          <div className="h-64 bg-zinc-800 rounded"></div>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-8 w-64" />
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -70,7 +82,7 @@ const Article = () => {
 
   return (
     <Layout>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Link to="/knowledge-base">
             <Button variant="ghost" size="icon">

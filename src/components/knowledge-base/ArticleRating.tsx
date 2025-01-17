@@ -1,68 +1,82 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
-import { toast } from "sonner";
 import { rateArticle } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface ArticleRatingProps {
   articleId: string;
 }
 
 const ArticleRating = ({ articleId }: ArticleRatingProps) => {
-  const [rated, setRated] = useState(false);
+  const [rating, setRating] = useState<number | null>(null);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRating = async (helpful: boolean) => {
+  const handleSubmit = async () => {
+    if (rating === null) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      await rateArticle(articleId, helpful ? 5 : 1);
-      setRated(true);
-      toast.success(
-        helpful
-          ? "Thank you for your feedback!"
-          : "Thanks for letting us know. We'll work on improving this article."
-      );
+      await rateArticle(articleId, rating, comment);
+      setRating(null);
+      setComment("");
+      toast.success("Thank you for your feedback!");
     } catch (error) {
-      console.error('Error rating article:', error);
-      toast.error('Failed to submit rating. Please try again.');
+      console.error("Error submitting rating:", error);
+      toast.error("Failed to submit rating");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (rated) {
-    return (
-      <Card className="bg-zinc-900 border-zinc-800">
-        <CardContent className="p-4">
-          <p className="text-sm text-center text-zinc-400">
-            Thank you for your feedback!
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="bg-zinc-900 border-zinc-800">
-      <CardContent className="p-4">
-        <p className="text-sm text-center mb-3">Was this article helpful?</p>
-        <div className="flex justify-center gap-2">
+      <CardHeader>
+        <CardTitle className="text-lg">Was this article helpful?</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant={rating === 1 ? "default" : "outline"}
             size="sm"
-            onClick={() => handleRating(true)}
-            className="flex items-center gap-2"
+            onClick={() => setRating(1)}
           >
-            <ThumbsUp className="w-4 h-4" />
+            <ThumbsUp className="w-4 h-4 mr-2" />
             Yes
           </Button>
           <Button
-            variant="outline"
+            variant={rating === 0 ? "default" : "outline"}
             size="sm"
-            onClick={() => handleRating(false)}
-            className="flex items-center gap-2"
+            onClick={() => setRating(0)}
           >
-            <ThumbsDown className="w-4 h-4" />
+            <ThumbsDown className="w-4 h-4 mr-2" />
             No
           </Button>
         </div>
+
+        {rating !== null && (
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Additional feedback (optional)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="min-h-[100px]"
+            />
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
