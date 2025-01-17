@@ -10,19 +10,10 @@ export async function saveArticle(article: {
   tags?: string[];
 }) {
   try {
-    const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-article', {
-      body: { content: article.content }
-    });
-
-    if (analysisError) {
-      console.error('Error analyzing article:', analysisError);
-    }
-
     const { data, error } = await supabase
       .from('articles')
       .insert([{
         ...article,
-        tags: analysisData?.analysis?.tags || article.tags,
         views: 0,
         rating_sum: 0,
         rating_count: 0
@@ -116,9 +107,14 @@ export async function saveApiKey(provider: string, key: string) {
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke('save-api-key', {
-      body: { provider, key }
-    });
+    const { data, error } = await supabase
+      .from('api_keys')
+      .insert([{
+        provider: provider.toUpperCase(),
+        key
+      }])
+      .select()
+      .single();
 
     if (error) {
       toast.error('Failed to save API key');
@@ -156,23 +152,5 @@ export async function getApiKey(provider: string) {
   } catch (error) {
     console.error('Error getting API key:', error);
     return null;
-  }
-}
-
-export async function processTicket(ticketData: any) {
-  try {
-    const { data, error } = await supabase.functions.invoke('process-ticket', {
-      body: { ticket: ticketData }
-    });
-
-    if (error) {
-      toast.error('Failed to process ticket');
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error processing ticket:', error);
-    throw error;
   }
 }

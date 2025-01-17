@@ -25,9 +25,11 @@ export const supabase = createClient<Database>(
 
 export const verifyConnection = async () => {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('articles')
-      .select('count', { count: 'exact', head: true });
+      .select('*')
+      .limit(1)
+      .single();
     
     if (error) {
       console.error('Supabase connection error:', error);
@@ -35,11 +37,10 @@ export const verifyConnection = async () => {
       throw error;
     }
     console.log('✓ Supabase connection verified');
+    return true;
   } catch (error) {
     console.error('× Supabase connection failed:', error);
     toast.error('Database connection failed');
     throw error;
   }
 };
-
-verifyConnection().catch(console.error);
