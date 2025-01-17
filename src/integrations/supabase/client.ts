@@ -28,8 +28,7 @@ export const verifyConnection = async () => {
     const { data, error } = await supabase
       .from('articles')
       .select('*')
-      .limit(1)
-      .single();
+      .limit(1);
     
     if (error) {
       console.error('Supabase connection error:', error);
