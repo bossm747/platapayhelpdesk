@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import HeroSection from "@/components/knowledge-base/HeroSection";
-import RoleSelector from "@/components/RoleSelector";
 import SearchSection from "@/components/knowledge-base/SearchSection";
 import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleListSection from "@/components/knowledge-base/ArticleListSection";
@@ -68,7 +67,6 @@ const Index = () => {
     <Layout>
       <div className="max-w-7xl mx-auto space-y-12 px-4 py-8">
         <HeroSection />
-        <RoleSelector />
         <SearchSection 
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
