@@ -22,7 +22,10 @@ export async function saveArticle(article: {
       .from('articles')
       .insert([{
         ...article,
-        tags: analysisData?.analysis?.tags || article.tags
+        tags: analysisData?.analysis?.tags || article.tags,
+        views: 0,
+        rating_sum: 0,
+        rating_count: 0
       }])
       .select()
       .single();
@@ -55,6 +58,52 @@ export async function getArticles() {
     return data;
   } catch (error) {
     console.error('Error getting articles:', error);
+    throw error;
+  }
+}
+
+export async function updateArticleViews(articleId: string) {
+  try {
+    const { error } = await supabase
+      .from('articles')
+      .update({ views: supabase.rpc('increment', { value: 1 }) })
+      .eq('id', articleId);
+
+    if (error) {
+      console.error('Error updating article views:', error);
+    }
+  } catch (error) {
+    console.error('Error updating article views:', error);
+  }
+}
+
+export async function rateArticle(articleId: string, rating: number, comment?: string) {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session?.session?.user?.id;
+
+    if (!userId) {
+      toast.error('You must be logged in to rate articles');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('article_feedback')
+      .insert([{
+        article_id: articleId,
+        user_id: userId,
+        rating,
+        comment
+      }]);
+
+    if (error) {
+      toast.error('Failed to submit rating');
+      throw error;
+    }
+
+    toast.success('Thank you for your feedback!');
+  } catch (error) {
+    console.error('Error rating article:', error);
     throw error;
   }
 }

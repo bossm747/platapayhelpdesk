@@ -1,8 +1,7 @@
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, ArrowRight, Book, CreditCard, Users, HelpCircle } from "lucide-react";
+import { Search, ArrowRight, Book, Eye, Star, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleSearch from "@/components/knowledge-base/ArticleSearch";
@@ -30,7 +29,10 @@ const Index = () => {
     article.content.toLowerCase().includes(searchQuery.toLowerCase())
   ) ?? [];
 
-  const popularArticles = articles?.slice(0, 3) ?? [];
+  const popularArticles = articles?.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 3) ?? [];
+  const recentArticles = articles?.sort((a, b) => 
+    new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+  ).slice(0, 3) ?? [];
 
   return (
     <Layout>
@@ -60,6 +62,18 @@ const Index = () => {
                       <p className="text-sm text-zinc-400">
                         {article.content.substring(0, 100)}...
                       </p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          {article.views || 0} views
+                        </span>
+                        {article.rating_count > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3" />
+                            {(article.rating_sum || 0) / (article.rating_count || 1)}/5
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -74,31 +88,62 @@ const Index = () => {
           <ArticleCategories />
         </div>
 
-        {/* Popular Articles */}
-        <div className="grid gap-8">
-          <h2 className="text-2xl font-bold text-center">Popular Articles</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {popularArticles.map((article) => (
-              <Link key={article.id} to={`/knowledge-base/${article.id}`}>
-                <Card className="h-full hover:bg-zinc-900 transition-colors border-zinc-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Book className="w-4 h-4" />
-                      {article.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-zinc-400">
-                      {article.content.substring(0, 150)}...
-                    </p>
-                    <div className="flex items-center justify-between mt-4 text-sm text-zinc-500">
-                      <span>{article.category}</span>
-                      <span>{article.views || 0} views</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+        {/* Popular & Recent Articles */}
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Popular Articles */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Popular Articles</h2>
+            <div className="space-y-4">
+              {popularArticles.map((article) => (
+                <Link key={article.id} to={`/knowledge-base/${article.id}`}>
+                  <Card className="hover:bg-zinc-900 transition-colors border-zinc-800">
+                    <CardContent className="p-4">
+                      <h3 className="font-medium flex items-center gap-2">
+                        <Book className="w-4 h-4" />
+                        {article.title}
+                      </h3>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-zinc-500">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-4 h-4" />
+                          {article.views || 0} views
+                        </span>
+                        {article.rating_count > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star className="w-4 h-4" />
+                            {(article.rating_sum || 0) / (article.rating_count || 1)}/5
+                          </span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Articles */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Recent Articles</h2>
+            <div className="space-y-4">
+              {recentArticles.map((article) => (
+                <Link key={article.id} to={`/knowledge-base/${article.id}`}>
+                  <Card className="hover:bg-zinc-900 transition-colors border-zinc-800">
+                    <CardContent className="p-4">
+                      <h3 className="font-medium flex items-center gap-2">
+                        <Book className="w-4 h-4" />
+                        {article.title}
+                      </h3>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-zinc-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(article.created_at || '').toLocaleDateString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 

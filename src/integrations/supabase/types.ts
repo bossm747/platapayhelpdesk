@@ -33,12 +33,91 @@ export type Database = {
         }
         Relationships: []
       }
+      article_feedback: {
+        Row: {
+          article_id: string | null
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      article_versions: {
+        Row: {
+          article_id: string | null
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          article_id?: string | null
+          category: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          article_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_versions_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articles: {
         Row: {
           category: string
           content: string
           created_at: string | null
           id: string
+          last_updated: string | null
+          rating_count: number | null
+          rating_sum: number | null
           tags: string[] | null
           title: string
           updated_at: string | null
@@ -49,6 +128,9 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          last_updated?: string | null
+          rating_count?: number | null
+          rating_sum?: number | null
           tags?: string[] | null
           title: string
           updated_at?: string | null
@@ -59,6 +141,9 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          last_updated?: string | null
+          rating_count?: number | null
+          rating_sum?: number | null
           tags?: string[] | null
           title?: string
           updated_at?: string | null
