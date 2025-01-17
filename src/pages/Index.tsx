@@ -41,7 +41,7 @@ const Index = () => {
         throw error;
       }
 
-      return data as Article[] || [];
+      return (data || []) as Article[];
     }
   });
 

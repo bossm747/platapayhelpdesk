@@ -23,44 +23,6 @@ export const supabase = createClient<Database>(
   }
 );
 
-const responseCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-export async function queryWithRetry<T>(
-  queryKey: string,
-  queryFn: () => Promise<{ data: T | null; error: any }>,
-  options = { useCache: true }
-): Promise<{ data: T | null; error: any }> {
-  try {
-    if (options.useCache) {
-      const cached = responseCache.get(queryKey);
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        return { data: cached.data, error: null };
-      }
-    }
-
-    const result = await queryFn();
-
-    if (result.error) {
-      console.error(`Query error for ${queryKey}:`, result.error);
-      throw result.error;
-    }
-
-    if (options.useCache && result.data) {
-      responseCache.set(queryKey, {
-        data: result.data,
-        timestamp: Date.now()
-      });
-    }
-
-    return result;
-  } catch (error: any) {
-    console.error(`Failed to execute query ${queryKey}:`, error);
-    toast.error(error.message || 'An error occurred while fetching data');
-    return { data: null, error };
-  }
-}
-
 export const verifyConnection = async () => {
   try {
     const { error } = await supabase
