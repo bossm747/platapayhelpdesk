@@ -8,6 +8,7 @@ import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleListSection from "@/components/knowledge-base/ArticleListSection";
 import SearchSection from "@/components/knowledge-base/SearchSection";
 import QuickLinks from "@/components/knowledge-base/QuickLinks";
+import ContactForm from "@/components/support/ContactForm";
 
 interface Article {
   id: string;
@@ -65,29 +66,24 @@ const Index = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-12">
-        {/* Hero Section with Search */}
         <HeroSection />
         
-        {/* Search Section */}
         <SearchSection 
           searchQuery={searchQuery}
           onSearch={setSearchQuery}
           filteredArticles={filteredArticles}
         />
 
-        {/* Quick Links */}
         <div className="py-4">
           <h2 className="text-2xl font-bold mb-6 text-center">Quick Access</h2>
           <QuickLinks />
         </div>
 
-        {/* Categories Section */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-center">Browse by Category</h2>
           <ArticleCategories />
         </div>
 
-        {/* Popular & Recent Articles */}
         <div className="grid gap-8 md:grid-cols-2">
           <ArticleListSection 
             title="Popular Articles" 
@@ -101,6 +97,16 @@ const Index = () => {
             showRating={false}
             showDate={true}
           />
+        </div>
+
+        <div className="py-12 bg-zinc-900/50 rounded-lg">
+          <div className="max-w-2xl mx-auto px-4">
+            <h2 className="text-2xl font-bold text-center mb-8">Need More Help?</h2>
+            <p className="text-zinc-400 text-center mb-8">
+              Can't find what you're looking for? Send us a message and our support team will get back to you as soon as possible.
+            </p>
+            <ContactForm />
+          </div>
         </div>
       </div>
     </Layout>
