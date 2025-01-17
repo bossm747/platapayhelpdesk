@@ -1,7 +1,6 @@
 import Layout from "@/components/layout/Layout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { queryWithRetry } from "@/integrations/supabase/client";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -32,21 +31,23 @@ const Index = () => {
   const { data: articles = [], isLoading, error } = useQuery({
     queryKey: ['articles'],
     queryFn: async () => {
-      const { data, error } = await queryWithRetry<Article[]>(
-        'all-articles',
-        () => supabase.from('articles').select('*')
-      );
-      
-      if (error) throw error;
-      return data || [];
-    },
-    meta: {
-      onError: (error: Error) => {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*');
+
+      if (error) {
         console.error('Error fetching articles:', error);
         toast.error('Failed to load articles');
+        throw error;
       }
+
+      return data as Article[] || [];
     }
   });
+
+  if (error) {
+    console.error('Error loading articles:', error);
+  }
 
   const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
