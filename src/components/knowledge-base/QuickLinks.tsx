@@ -3,10 +3,10 @@ import { ArrowRight } from "lucide-react";
 
 const QuickLinks = () => {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-fade-in delay-200">
       <Button
         variant="outline"
-        className="justify-between"
+        className="justify-between hover:bg-zinc-800/50"
         onClick={() => window.open('https://platapay.com', '_blank')}
       >
         Visit PlataPay Website
@@ -14,7 +14,7 @@ const QuickLinks = () => {
       </Button>
       <Button
         variant="outline"
-        className="justify-between"
+        className="justify-between hover:bg-zinc-800/50"
         onClick={() => window.open('https://docs.platapay.com', '_blank')}
       >
         Developer Documentation
@@ -22,7 +22,7 @@ const QuickLinks = () => {
       </Button>
       <Button
         variant="outline"
-        className="justify-between lg:col-span-1 md:col-span-2"
+        className="justify-between lg:col-span-1 md:col-span-2 hover:bg-zinc-800/50"
         onClick={() => window.open('https://status.platapay.com', '_blank')}
       >
         System Status

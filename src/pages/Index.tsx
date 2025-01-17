@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
-
+import HeroSection from "@/components/knowledge-base/HeroSection";
 import ArticleCategories from "@/components/knowledge-base/ArticleCategories";
 import ArticleListSection from "@/components/knowledge-base/ArticleListSection";
-import { Input } from "@/components/ui/input";
+import SearchSection from "@/components/knowledge-base/SearchSection";
+import QuickLinks from "@/components/knowledge-base/QuickLinks";
 
 interface Article {
   id: string;
@@ -64,24 +64,19 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto space-y-12 px-4 py-8">
+      <div className="max-w-7xl mx-auto space-y-12 animate-fade-in">
         {/* Hero Section with Search */}
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl font-bold">How can we help you today?</h1>
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Search our knowledge base or browse categories below to find the answers you need.
-          </p>
-          <div className="max-w-2xl mx-auto relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-5 h-5" />
-            <Input
-              type="search"
-              placeholder="Search for articles..."
-              className="w-full pl-10 h-12 text-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
+        <HeroSection />
+        
+        {/* Search Section */}
+        <SearchSection 
+          searchQuery={searchQuery}
+          onSearch={setSearchQuery}
+          filteredArticles={filteredArticles}
+        />
+
+        {/* Quick Links */}
+        <QuickLinks />
 
         {/* Categories Section */}
         <div className="space-y-6">
@@ -104,25 +99,6 @@ const Index = () => {
             showDate={true}
           />
         </div>
-
-        {/* Search Results */}
-        {searchQuery && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Search Results</h2>
-            <div className="space-y-4">
-              {filteredArticles.length === 0 ? (
-                <p className="text-center text-zinc-400">No articles found matching your search.</p>
-              ) : (
-                <ArticleListSection 
-                  title="" 
-                  articles={filteredArticles}
-                  showRating={true}
-                  showDate={true}
-                />
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );

@@ -20,7 +20,7 @@ interface SearchSectionProps {
 
 const SearchSection = ({ searchQuery, onSearch, filteredArticles }: SearchSectionProps) => {
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto animate-fade-in delay-150">
       <ArticleSearch onSearch={onSearch} />
       {searchQuery && filteredArticles.length > 0 && (
         <Card className="mt-4">
