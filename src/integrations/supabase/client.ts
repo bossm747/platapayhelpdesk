@@ -2,15 +2,24 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { toast } from 'sonner';
 
-// Get environment variables from .env
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase configuration');
+  const missingVars = [];
+  if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL');
+  if (!supabaseKey) missingVars.push('VITE_SUPABASE_ANON_KEY');
+  
+  const errorMessage = `Missing required Supabase configuration: ${missingVars.join(', ')}`;
+  console.error(errorMessage);
   toast.error('Database configuration error');
-  throw new Error('Missing required configuration for Supabase');
+  throw new Error(errorMessage);
 }
+
+// Log the first and last 4 characters of the key for debugging
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key:', `${supabaseKey.slice(0, 4)}...${supabaseKey.slice(-4)}`);
 
 export const supabase = createClient<Database>(
   supabaseUrl,
