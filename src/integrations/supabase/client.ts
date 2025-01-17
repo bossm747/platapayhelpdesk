@@ -3,8 +3,14 @@ import type { Database } from './types';
 import { toast } from 'sonner';
 
 // Get environment variables
-const supabaseUrl = 'https://dqnzvtcguhpkrsgxogax.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbnp2dGNndWhwa3JzZ3hvZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4MjQxNzAsImV4cCI6MjAyNTQwMDE3MH0.qDTKLaXB-LnDEE8TH54zn-oWdp9u1hi_C8PHJ_dgBYs';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables');
+  toast.error('Database configuration error');
+  throw new Error('Missing required environment variables for Supabase');
+}
 
 // Create Supabase client
 export const supabase = createClient<Database>(
